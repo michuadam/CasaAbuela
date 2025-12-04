@@ -16,15 +16,15 @@ export function StorySection() {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="aspect-[4/5] w-full overflow-hidden rounded-sm">
+            <div className="aspect-[3/4] w-full max-w-xs mx-auto lg:mx-0 overflow-hidden rounded-sm shadow-lg rotate-2 bg-white p-2">
               <img 
                 src={familyImg} 
                 alt="Babcia, 97 lat, serce naszej plantacji" 
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 filter sepia-[.15] contrast-[1.05]"
               />
             </div>
             {/* Decorative Element */}
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-primary/20 -z-10 hidden md:block" />
+            <div className="absolute -bottom-4 -right-4 lg:right-auto lg:left-32 w-24 h-24 border border-primary/20 -z-10 hidden md:block rotate-6" />
           </motion.div>
 
           <motion.div 

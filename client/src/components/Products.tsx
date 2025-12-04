@@ -1,35 +1,25 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import productImg from "@assets/generated_images/premium_coffee_bag_on_wooden_table.png";
+import { ArrowRight } from "lucide-react";
+import espressoImg from "@assets/generated_images/dark_roast_espresso_coffee_beans.png";
+import dripImg from "@assets/generated_images/light_roast_drip_coffee_beans.png";
 
-const products = [
+const categories = [
   {
-    id: 1,
-    name: "Huila Especial",
-    process: "Myta (Washed)",
-    notes: "Czekolada, Karmel, Cytrusy",
-    price: "59.00 PLN",
-    weight: "250g",
-    image: productImg
+    id: "espresso",
+    title: "Do Ekspresu",
+    subtitle: "Espresso Roast",
+    description: "Ciemniejsze palenie, idealne do ekspresów ciśnieniowych i kawiarek. Gęste, intensywne, z nutami ciemnej czekolady i karmelu.",
+    image: espressoImg,
+    price: "od 59.00 PLN"
   },
   {
-    id: 2,
-    name: "Finca La Familia",
-    process: "Naturalna",
-    notes: "Czerwone Owoce, Miód, Wino",
-    price: "65.00 PLN",
-    weight: "250g",
-    image: productImg
-  },
-  {
-    id: 3,
-    name: "Reserva Don Pablo",
-    process: "Honey",
-    notes: "Jaśmin, Brzoskwinia, Wanilia",
-    price: "79.00 PLN",
-    weight: "250g",
-    image: productImg
+    id: "drip",
+    title: "Do Przelewów",
+    subtitle: "Filter Roast",
+    description: "Jaśniejsze palenie, stworzone dla metod alternatywnych (Drip, Chemex, Aeropress). Podkreśla owocowość i kwasowość ziarna.",
+    image: dripImg,
+    price: "od 65.00 PLN"
   }
 ];
 
@@ -40,44 +30,49 @@ export function Products() {
         <div className="text-center max-w-3xl mx-auto mb-20">
           <span className="text-primary/60 uppercase tracking-[0.2em] text-sm font-bold block mb-4">Sklep</span>
           <h2 className="font-serif text-4xl md:text-5xl font-medium text-primary mb-6">
-            Wybierz Swoją Kawę
+            Wybierz Metodę Parzenia
           </h2>
           <p className="text-muted-foreground text-lg font-light">
-            Świeżo palona, pakowana ręcznie i wysyłana prosto do Ciebie.
+            Każde ziarno palimy inaczej, aby wydobyć z niego to, co najlepsze dla Twojego ulubionego sposobu parzenia.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {products.map((product, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 max-w-5xl mx-auto">
+          {categories.map((category, index) => (
             <motion.div
-              key={product.id}
+              key={category.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              className="group"
+              transition={{ delay: index * 0.2, duration: 0.6 }}
+              className="group cursor-pointer"
             >
-              <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#F5F5F0] rounded-sm">
+              <div className="relative aspect-[4/3] mb-8 overflow-hidden rounded-sm">
                  <img 
-                  src={product.image} 
-                  alt={product.name}
+                  src={category.image} 
+                  alt={category.title}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+                
+                <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 text-xs font-bold tracking-widest uppercase text-primary">
+                  {category.subtitle}
+                </div>
               </div>
               
-              <div className="text-center space-y-2">
-                <h3 className="font-serif text-2xl text-primary font-medium">{product.name}</h3>
-                <div className="text-sm text-primary/60 uppercase tracking-wider font-medium">{product.process}</div>
-                <p className="text-muted-foreground font-light italic">{product.notes}</p>
-                <div className="pt-4 flex items-center justify-center gap-4">
-                   <span className="text-lg font-semibold text-primary">{product.price}</span>
+              <div className="space-y-4">
+                <div className="flex justify-between items-baseline border-b border-primary/10 pb-4">
+                  <h3 className="font-serif text-3xl text-primary font-medium">{category.title}</h3>
+                  <span className="text-lg font-medium text-primary/80">{category.price}</span>
                 </div>
-                <Button 
-                  className="w-full mt-4 bg-primary text-white hover:bg-primary/90 rounded-none h-12 uppercase tracking-widest text-xs"
-                >
-                  Dodaj do koszyka
-                </Button>
+                
+                <p className="text-muted-foreground font-light leading-relaxed">
+                  {category.description}
+                </p>
+                
+                <div className="pt-4 flex items-center text-primary font-medium text-sm uppercase tracking-wider group-hover:translate-x-2 transition-transform duration-300">
+                  Zobacz produkty <ArrowRight className="ml-2 h-4 w-4" />
+                </div>
               </div>
             </motion.div>
           ))}
