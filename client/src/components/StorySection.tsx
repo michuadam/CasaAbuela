@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import familyImg from "@assets/generated_images/family_gathering_at_coffee_farm.png";
+import familyImg from "@assets/WhatsApp_Image_2025-12-04_at_14.33.13_1764877056267.jpeg";
 import handsImg from "@assets/generated_images/farmer_hands_holding_coffee_cherries.png";
 
 export function StorySection() {
@@ -19,7 +19,7 @@ export function StorySection() {
             <div className="aspect-[4/5] w-full overflow-hidden rounded-sm">
               <img 
                 src={familyImg} 
-                alt="Rodzina przy stole" 
+                alt="Babcia, 97 lat, serce naszej plantacji" 
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
               />
             </div>
@@ -36,15 +36,15 @@ export function StorySection() {
           >
             <span className="text-primary/60 uppercase tracking-[0.2em] text-sm font-bold">Nasza Historia</span>
             <h2 className="font-serif text-4xl md:text-5xl font-medium text-primary leading-tight">
-              Więcej niż kawa.<br/>To część naszej rodziny.
+              Więcej niż kawa.<br/>To dziedzictwo naszej Babci.
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed font-light">
-              Nasza plantacja w regionie Huila to nie tylko miejsce pracy – to nasz dom od trzech pokoleń. 
-              Każde ziarno, które trafia do Twojej filiżanki, było pielęgnowane przez ręce, które znają tę ziemię na pamięć.
+              Nasza plantacja w regionie Huila to dom naszej Babci, która ma 97 lat i poświęciła kawie niemal całe swoje życie. 
+              Jej doświadczenie i miłość do ziemi są fundamentem wszystkiego, co robimy.
             </p>
             <p className="text-muted-foreground text-lg leading-relaxed font-light">
-              Wierzymy, że najlepsza kawa rodzi się z szacunku do natury i miłości do tradycji. Nie używamy przemysłowych metod – 
-              stawiamy na rzemiosło, czas i cierpliwość.
+              To ona nauczyła nas, że najlepsza kawa rodzi się z szacunku do natury i cierpliwości. 
+              Kontynuujemy jej misję, dbając o tradycję, którą pielęgnuje od dekad, przekazując nam sekrety idealnego ziarna.
             </p>
           </motion.div>
         </div>
