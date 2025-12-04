@@ -49,54 +49,6 @@ export function StorySection() {
           </motion.div>
         </div>
 
-        {/* Second Block: The Craft */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="lg:order-2 relative"
-          >
-             <div className="aspect-square w-full overflow-hidden rounded-sm">
-              <img 
-                src={handsImg} 
-                alt="Ręce farmera z kawą" 
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-              />
-            </div>
-             {/* Decorative Element */}
-             <div className="absolute -top-6 -left-6 w-32 h-32 bg-primary/5 -z-10 hidden md:block" />
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="lg:order-1 space-y-8"
-          >
-            <span className="text-primary/60 uppercase tracking-[0.2em] text-sm font-bold">Region Huila</span>
-            <h2 className="font-serif text-4xl md:text-5xl font-medium text-primary leading-tight">
-              Smak wulkanicznej ziemi
-            </h2>
-            <p className="text-muted-foreground text-lg leading-relaxed font-light">
-              Huila to region pobłogosławiony przez naturę. Wysokie góry Andów, wulkaniczne gleby i idealny mikroklimat 
-              tworzą warunki, których nie da się podrobić.
-            </p>
-            <div className="grid grid-cols-2 gap-8 pt-4">
-              <div>
-                <h4 className="font-serif text-3xl text-primary mb-2">1.500m</h4>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide">Wysokość upraw</p>
-              </div>
-              <div>
-                <h4 className="font-serif text-3xl text-primary mb-2">100%</h4>
-                <p className="text-sm text-muted-foreground uppercase tracking-wide">Arabica</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
       </div>
     </section>
   );
