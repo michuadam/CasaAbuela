@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
           <div className="col-span-1 md:col-span-2">
             <a href="/" className="text-3xl font-serif font-bold tracking-tighter mb-6 block">
-              CASA HUILA
+              CASA ABUELA
             </a>
             <p className="text-primary-foreground/70 max-w-md font-light leading-relaxed">
               Rodzinna plantacja kawy w sercu Kolumbii. Dostarczamy nie tylko ziarna, ale historię, tradycję i pasję, którą wkładamy w każdą filiżankę.
@@ -27,7 +27,7 @@ export function Footer() {
           <div>
             <h4 className="font-serif text-xl mb-6">Kontakt</h4>
             <ul className="space-y-4 font-light text-primary-foreground/80">
-              <li>hello@casahuila.pl</li>
+              <li>hello@casaabuela.pl</li>
               <li>+48 123 456 789</li>
               <li>ul. Kawowa 12, Warszawa</li>
             </ul>
@@ -40,7 +40,7 @@ export function Footer() {
         </div>
         
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-primary-foreground/40 font-light">
-          <p>&copy; {new Date().getFullYear()} Casa Huila. Wszelkie prawa zastrzeżone.</p>
+          <p>&copy; {new Date().getFullYear()} Casa Abuela. Wszelkie prawa zastrzeżone.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white transition-colors">Polityka Prywatności</a>
             <a href="#" className="hover:text-white transition-colors">Regulamin</a>

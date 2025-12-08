@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import heroBg from "@assets/generated_images/scenic_coffee_farm_in_huila_colombia_with_mountains.png";
+import heroBg from "@assets/IMG20251207122133_1765220354258.jpg";
 
 export function Hero() {
   return (
@@ -9,7 +9,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <img
           src={heroBg}
-          alt="Plantacja kawy w Huila"
+          alt="Plantacja kawy Casa Abuela"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30 mix-blend-multiply" />

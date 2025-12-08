@@ -3,6 +3,7 @@ import { ShoppingBag, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "wouter";
+import logo from "@assets/Casa_Abuela_1765220386882.png";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -19,7 +20,7 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/90 backdrop-blur-md border-b border-stone-100 py-4 shadow-sm"
+          ? "bg-white/90 backdrop-blur-md border-b border-stone-100 py-3 shadow-sm"
           : "bg-transparent py-6 text-white"
       }`}
     >
@@ -34,8 +35,8 @@ export function Navbar() {
         </div>
 
         <Link href="/">
-          <a className="text-2xl md:text-3xl font-serif font-bold tracking-tighter">
-            CASA HUILA
+          <a className="flex items-center gap-2">
+            <img src={logo} alt="Casa Abuela" className="h-16 md:h-20 w-auto" />
           </a>
         </Link>
 
