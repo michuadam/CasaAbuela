@@ -1,129 +1,90 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Droplets, Flame } from "lucide-react";
-import productBag from "@assets/generated_images/premium_coffee_bag_on_wooden_table.png";
+import { ShoppingBag } from "lucide-react";
+import productBag from "@assets/Gemini_Generated_Image_49qvov49qvov49qv_1765237897906.png";
 
 const products = [
   {
-    id: "espresso",
-    title: "Huila Espresso",
-    tagline: "Głębia i Charakter",
-    roast: "Ciemne (Dark Roast)",
-    description: "Intensywna i pełna smaku. Idealna do espresso i kaw mlecznych. Długo wypalana, aby wydobyć nuty czekolady i orzechów.",
-    price: "59.00 PLN",
+    id: "beans-250",
+    title: "Ziarnista",
     weight: "250g",
-    notes: ["Ciemna Czekolada", "Karmel", "Prażone Orzechy"],
-    ratings: {
-      boldness: 5, // Moc/Body
-      acidity: 2   // Kwasowość
-    }
+    roast: "Średnie",
+    price: "59.00 PLN",
+    description: "Idealna do codziennego parzenia. Pełnia aromatu świeżo palonych ziaren.",
   },
   {
-    id: "filter",
-    title: "Huila Filter",
-    tagline: "Owocowa Lekkość",
-    roast: "Jasne (Light Roast)",
-    description: "Delikatna i aromatyczna. Stworzona do metod przelewowych. Podkreśla naturalną kwasowość i słodycz regionu Huila.",
-    price: "65.00 PLN",
+    id: "beans-1000",
+    title: "Ziarnista",
+    weight: "1kg",
+    roast: "Średnie",
+    price: "189.00 PLN",
+    description: "Ekonomiczne opakowanie dla prawdziwych miłośników kawy.",
+  },
+  {
+    id: "ground-250",
+    title: "Mielona",
     weight: "250g",
-    notes: ["Cytrusy", "Czerwone Owoce", "Miód"],
-    ratings: {
-      boldness: 3, 
-      acidity: 5
-    }
+    roast: "Średnie",
+    price: "59.00 PLN",
+    description: "Wygoda i smak. Zmielona idealnie pod kawiarkę lub ekspres przelewowy.",
+  },
+  {
+    id: "ground-1000",
+    title: "Mielona",
+    weight: "1kg",
+    roast: "Średnie",
+    price: "189.00 PLN",
+    description: "Duże opakowanie Twojej ulubionej kawy mielonej. Świeżość na dłużej.",
   }
 ];
-
-function RatingDots({ label, value, max = 5 }: { label: string, value: number, max?: number }) {
-  return (
-    <div className="flex items-center gap-4">
-      <span className="text-xs uppercase tracking-widest w-24 text-primary/60 font-medium">{label}</span>
-      <div className="flex gap-1">
-        {Array.from({ length: max }).map((_, i) => (
-          <div 
-            key={i} 
-            className={`h-2 w-2 rounded-full ${i < value ? 'bg-primary' : 'bg-primary/10'}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function Products() {
   return (
     <section id="products" className="py-24 md:py-32 bg-white">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <span className="text-primary/60 uppercase tracking-[0.2em] text-sm font-bold block mb-4">Nasze Ziarna</span>
+          <span className="text-primary/60 uppercase tracking-[0.2em] text-sm font-bold block mb-4">Sklep</span>
           <h2 className="font-serif text-4xl md:text-5xl font-medium text-primary mb-6">
-            Dwa style, jedno pochodzenie
+            Wybierz Swoją Wersję
           </h2>
           <p className="text-muted-foreground text-lg font-light">
-            Wybierz profil palenia idealnie dopasowany do Twojego rytuału.
+            Ziarnista czy mielona? Mała paczka na spróbowanie czy kilogram ulubionego smaku?
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.2, duration: 0.6 }}
-              className="group relative bg-[#F9F7F2] p-8 md:p-12 rounded-sm overflow-hidden"
+              transition={{ delay: index * 0.1, duration: 0.6 }}
+              className="group flex flex-col h-full"
             >
-              {/* Product Content Layout */}
-              <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-                
-                {/* Image Section */}
-                <div className="w-full md:w-1/2 relative">
-                  <div className="aspect-[3/4] relative z-10 overflow-hidden rounded-sm shadow-xl rotate-1 group-hover:rotate-0 transition-transform duration-500">
-                     <img 
-                      src={productBag} 
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {/* Decorative background blob */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-0" />
-                </div>
-
-                {/* Details Section */}
-                <div className="w-full md:w-1/2 space-y-6">
-                  <div>
-                    <span className="text-primary/60 text-xs font-bold tracking-widest uppercase mb-2 block">{product.roast}</span>
-                    <h3 className="font-serif text-3xl text-primary font-medium">{product.title}</h3>
-                    <p className="text-primary/50 font-serif italic">{product.tagline}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {product.notes.map(note => (
-                      <span key={note} className="px-3 py-1 border border-primary/20 rounded-full text-xs uppercase tracking-wide text-primary/80">
-                        {note}
-                      </span>
-                    ))}
-                  </div>
-
-                  <p className="text-muted-foreground font-light text-sm leading-relaxed">
+              <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#F9F7F2] rounded-sm p-6 flex items-center justify-center">
+                 <img 
+                  src={productBag} 
+                  alt={`${product.title} ${product.weight}`}
+                  className="w-full h-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              
+              <div className="text-center space-y-2 flex-grow flex flex-col justify-between">
+                <div>
+                  <h3 className="font-serif text-xl text-primary font-medium">{product.title} <span className="text-primary/60 font-sans text-base">{product.weight}</span></h3>
+                  <p className="text-sm text-muted-foreground mt-2 font-light leading-relaxed px-2">
                     {product.description}
                   </p>
-
-                  <div className="space-y-3 pt-2 border-t border-primary/10">
-                    <RatingDots label="Kwasowość" value={product.ratings.acidity} />
-                    <RatingDots label="Moc / Body" value={product.ratings.boldness} />
-                  </div>
-
-                  <div className="pt-6 flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-2xl font-serif font-bold text-primary">{product.price}</span>
-                      <span className="text-xs text-muted-foreground">{product.weight}</span>
-                    </div>
-                    <Button size="lg" className="rounded-none bg-primary hover:bg-primary/90">
-                      <ShoppingBag className="mr-2 h-4 w-4" /> Kup Teraz
-                    </Button>
-                  </div>
+                </div>
+                
+                <div className="pt-4">
+                   <div className="text-lg font-semibold text-primary mb-3">{product.price}</div>
+                   <Button 
+                    className="w-full bg-primary text-white hover:bg-primary/90 rounded-none h-10 uppercase tracking-widest text-xs"
+                  >
+                    <ShoppingBag className="mr-2 h-3 w-3" /> Dodaj
+                  </Button>
                 </div>
               </div>
             </motion.div>
