@@ -18,14 +18,6 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-sm md:text-base uppercase tracking-[0.2em] font-medium mb-4 text-white/90"
-        >
-          Prosto z Kolumbii
-        </motion.span>
         
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
