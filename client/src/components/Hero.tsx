@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import heroBg from "@assets/IMG20251207122133_1765214270982.jpg";
+import heroBg from "@assets/generated_images/scenic_coffee_farm_in_huila_colombia_with_mountains.png";
 
 export function Hero() {
   return (

@@ -1,5 +1,4 @@
 import { Facebook, Instagram, Twitter } from "lucide-react";
-import logo from "@assets/Gemini_Generated_Image_2khjyz2khjyz2khj_1765214307938.png";
 
 export function Footer() {
   return (
@@ -7,8 +6,8 @@ export function Footer() {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
           <div className="col-span-1 md:col-span-2">
-            <a href="/" className="block mb-6">
-               <img src={logo} alt="Casa Abuela" className="h-20 w-auto opacity-90 brightness-0 invert" />
+            <a href="/" className="text-3xl font-serif font-bold tracking-tighter mb-6 block">
+              CASA HUILA
             </a>
             <p className="text-primary-foreground/70 max-w-md font-light leading-relaxed">
               Rodzinna plantacja kawy w sercu Kolumbii. Dostarczamy nie tylko ziarna, ale historię, tradycję i pasję, którą wkładamy w każdą filiżankę.

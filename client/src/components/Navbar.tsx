@@ -3,7 +3,6 @@ import { ShoppingBag, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "wouter";
-import logo from "@assets/Gemini_Generated_Image_2khjyz2khjyz2khj_1765214307938.png";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,36 +19,36 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/90 backdrop-blur-md border-b border-stone-100 py-2 shadow-sm"
-          : "bg-transparent py-4 text-white"
+          ? "bg-white/90 backdrop-blur-md border-b border-stone-100 py-4 shadow-sm"
+          : "bg-transparent py-6 text-white"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <div className="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">
-          <a href="#story" className={`hover:text-primary/80 transition-colors ${isScrolled ? "text-primary" : "text-white"}`}>
+          <a href="#story" className="hover:text-primary/80 transition-colors">
             O NAS
           </a>
-          <a href="#products" className={`hover:text-primary/80 transition-colors ${isScrolled ? "text-primary" : "text-white"}`}>
+          <a href="#products" className="hover:text-primary/80 transition-colors">
             SKLEP
           </a>
         </div>
 
         <Link href="/">
-          <a className="block">
-             <img src={logo} alt="Casa Abuela" className="h-20 w-auto md:h-24 transition-all duration-300 drop-shadow-sm" />
+          <a className="text-2xl md:text-3xl font-serif font-bold tracking-tighter">
+            CASA HUILA
           </a>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">
-          <a href="#process" className={`hover:text-primary/80 transition-colors ${isScrolled ? "text-primary" : "text-white"}`}>
+          <a href="#process" className="hover:text-primary/80 transition-colors">
             PROCES
           </a>
-          <Button variant="ghost" size="icon" className={`hover:bg-transparent ${isScrolled ? "text-primary" : "text-white"}`}>
+          <Button variant="ghost" size="icon" className="hover:bg-transparent">
             <ShoppingBag className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className={`md:hidden flex items-center gap-4 ${isScrolled ? "text-primary" : "text-white"}`}>
+        <div className="md:hidden flex items-center gap-4">
           <Button variant="ghost" size="icon" className="text-inherit hover:bg-transparent">
              <ShoppingBag className="h-5 w-5" />
           </Button>
