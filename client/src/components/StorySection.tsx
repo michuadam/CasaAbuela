@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import familyImg from "@assets/WhatsApp_Image_2025-12-04_at_14.33.13_1764877056267.jpeg";
+import meliImg from "@assets/website_meli_1765221742696.jpg";
 import handsImg from "@assets/generated_images/farmer_hands_holding_coffee_cherries.png";
 
 export function StorySection() {
@@ -14,17 +15,28 @@ export function StorySection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative"
+            className="relative pr-8 lg:pr-0" // Added padding-right for mobile so the offset image isn't cut off
           >
-            <div className="aspect-[3/4] w-full max-w-xs mx-auto lg:mx-0 overflow-hidden rounded-sm shadow-lg rotate-2 bg-white p-2">
+             {/* Back Image (Meli) - Positioned to the right and behind */}
+            <div className="absolute top-8 left-1/2 ml-4 lg:ml-12 lg:left-24 w-full max-w-xs aspect-[3/4] bg-white p-2 shadow-lg -rotate-3 rounded-sm -z-0">
+               <img 
+                src={meliImg} 
+                alt="Młode pokolenie na plantacji" 
+                className="w-full h-full object-cover filter sepia-[.15] contrast-[1.05]"
+              />
+            </div>
+
+            {/* Front Image (Grandma) */}
+            <div className="relative z-10 aspect-[3/4] w-full max-w-xs mx-auto lg:mx-0 overflow-hidden rounded-sm shadow-lg rotate-2 bg-white p-2">
               <img 
                 src={familyImg} 
                 alt="Babcia, 97 lat, serce naszej plantacji" 
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-700 filter sepia-[.15] contrast-[1.05]"
               />
             </div>
+            
             {/* Decorative Element */}
-            <div className="absolute -bottom-4 -right-4 lg:right-auto lg:left-32 w-24 h-24 border border-primary/20 -z-10 hidden md:block rotate-6" />
+            <div className="absolute -bottom-4 -left-4 w-24 h-24 border border-primary/20 -z-10 hidden md:block -rotate-6" />
           </motion.div>
 
           <motion.div 
