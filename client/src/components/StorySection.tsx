@@ -10,9 +10,9 @@ export function StorySection() {
         
         {/* First Block: Introduction */}
         <motion.div 
-          initial={{ opacity: 0, x: -150 }}
+          initial={{ opacity: 0, x: -300 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32"
         >
