@@ -10,7 +10,7 @@ export function StorySection() {
         
         {/* First Block: Introduction */}
         <motion.div 
-          initial={{ opacity: 0, x: -300 }}
+          initial={{ opacity: 0, x: 300 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
