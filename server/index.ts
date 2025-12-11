@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -6,11 +7,27 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 
+declare module "express-session" {
+  interface SessionData {
+    id: string;
+  }
+}
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
   }
 }
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'casa-abuela-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+  }
+}));
 
 app.use(
   express.json({
