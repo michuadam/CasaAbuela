@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { StorySection } from "@/components/StorySection";
+import { ProcessSection } from "@/components/ProcessSection";
 import { Products } from "@/components/Products";
 import { Footer } from "@/components/Footer";
 
@@ -11,6 +12,7 @@ export default function Home() {
       <main>
         <Hero />
         <StorySection />
+        <ProcessSection />
         <Products />
         
         {/* Newsletter / Final CTA */}
