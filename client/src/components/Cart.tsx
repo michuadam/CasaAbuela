@@ -104,6 +104,10 @@ export function Cart({ open, onOpenChange }: CartProps) {
               <Button 
                 className="w-full bg-primary hover:bg-primary/90 text-white h-12 rounded-none uppercase tracking-widest text-sm"
                 data-testid="button-checkout"
+                onClick={() => {
+                  onOpenChange(false);
+                  window.location.href = '/checkout';
+                }}
               >
                 Przejdź do kasy
               </Button>

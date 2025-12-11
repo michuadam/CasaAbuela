@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema } from "@shared/schema";
 import { z } from "zod";
+import { getUncachableStripeClient } from "./stripeClient";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -105,6 +106,141 @@ export async function registerRoutes(
         return res.status(400).json({ error: error.errors });
       }
       res.status(500).json({ error: "Failed to subscribe" });
+    }
+  });
+
+  // Checkout - Create Stripe session
+  app.post("/api/checkout", async (req, res) => {
+    try {
+      const sessionId = req.session.id;
+      const { customerName, customerEmail, customerPhone, inpostPointId, inpostPointName, inpostPointAddress } = req.body;
+
+      if (!customerName || !customerEmail || !customerPhone) {
+        return res.status(400).json({ error: "Missing customer information" });
+      }
+
+      const cartItems = await storage.getCartItems(sessionId);
+      if (cartItems.length === 0) {
+        return res.status(400).json({ error: "Cart is empty" });
+      }
+
+      const totalAmount = cartItems.reduce(
+        (sum, item) => sum + parseFloat(item.product.price) * item.quantity,
+        0
+      );
+
+      const order = await storage.createOrder({
+        sessionId,
+        status: "pending",
+        customerName,
+        customerEmail,
+        customerPhone,
+        inpostPointId: inpostPointId || null,
+        inpostPointName: inpostPointName || null,
+        inpostPointAddress: inpostPointAddress || null,
+        totalAmount: totalAmount.toFixed(2),
+        items: JSON.stringify(cartItems.map(item => ({
+          productId: item.productId,
+          title: item.product.title,
+          weight: item.product.weight,
+          type: item.product.type,
+          price: item.product.price,
+          quantity: item.quantity
+        })))
+      });
+
+      const stripe = await getUncachableStripeClient();
+      
+      const lineItems = cartItems.map(item => ({
+        price_data: {
+          currency: 'pln',
+          product_data: {
+            name: `${item.product.title} ${item.product.weight}`,
+            description: item.product.description,
+          },
+          unit_amount: Math.round(parseFloat(item.product.price) * 100),
+        },
+        quantity: item.quantity,
+      }));
+
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      
+      const checkoutSession = await stripe.checkout.sessions.create({
+        payment_method_types: ['card', 'blik', 'p24'],
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: `${baseUrl}/order-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/checkout?canceled=true`,
+        customer_email: customerEmail,
+        metadata: {
+          orderId: order.id,
+        },
+        shipping_options: [
+          {
+            shipping_rate_data: {
+              type: 'fixed_amount',
+              fixed_amount: {
+                amount: 1499,
+                currency: 'pln',
+              },
+              display_name: 'InPost Paczkomat',
+              delivery_estimate: {
+                minimum: {
+                  unit: 'business_day',
+                  value: 2,
+                },
+                maximum: {
+                  unit: 'business_day',
+                  value: 4,
+                },
+              },
+            },
+          },
+        ],
+      });
+
+      await storage.updateOrderStripeSession(order.id, checkoutSession.id);
+      await storage.updateOrderStatus(order.id, "awaiting_payment");
+
+      res.json({ url: checkoutSession.url, orderId: order.id });
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Verify payment success by Stripe checkout session ID
+  app.get("/api/order/verify/:stripeSessionId", async (req, res) => {
+    try {
+      const stripe = await getUncachableStripeClient();
+      const stripeSession = await stripe.checkout.sessions.retrieve(req.params.stripeSessionId);
+      
+      if (stripeSession.payment_status === 'paid' && stripeSession.metadata?.orderId) {
+        let order = await storage.getOrder(stripeSession.metadata.orderId);
+        if (order && order.status !== 'paid') {
+          order = await storage.updateOrderStatus(order.id, "paid", stripeSession.payment_intent as string);
+          await storage.clearCart(order!.sessionId);
+        }
+        res.json({ success: true, order });
+      } else {
+        res.json({ success: false, status: stripeSession.payment_status });
+      }
+    } catch (error) {
+      console.error("Order verification error:", error);
+      res.status(500).json({ error: "Failed to verify order" });
+    }
+  });
+
+  // Get order by ID
+  app.get("/api/order/:id", async (req, res) => {
+    try {
+      const order = await storage.getOrder(req.params.id);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get order" });
     }
   });
 

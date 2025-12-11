@@ -5,9 +5,12 @@ import {
   type InsertCartItem,
   type NewsletterSubscriber,
   type InsertNewsletterSubscriber,
+  type Order,
+  type InsertOrder,
   products,
   cartItems,
-  newsletterSubscribers
+  newsletterSubscribers,
+  orders
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and } from "drizzle-orm";
@@ -105,6 +108,40 @@ export class DbStorage implements IStorage {
   async subscribeToNewsletter(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
     const result = await db.insert(newsletterSubscribers).values(subscriber).returning();
     return result[0];
+  }
+
+  // Orders
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const result = await db.insert(orders).values(order).returning();
+    return result[0];
+  }
+
+  async getOrder(id: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.id, id));
+    return result[0];
+  }
+
+  async getOrderByStripeSession(stripeSessionId: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.stripeSessionId, stripeSessionId));
+    return result[0];
+  }
+
+  async updateOrderStatus(id: string, status: string, stripePaymentIntentId?: string): Promise<Order | undefined> {
+    const updateData: any = { status };
+    if (stripePaymentIntentId) {
+      updateData.stripePaymentIntentId = stripePaymentIntentId;
+    }
+    const result = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
+    return result[0];
+  }
+
+  async updateOrderStripeSession(id: string, stripeSessionId: string): Promise<Order | undefined> {
+    const result = await db.update(orders).set({ stripeSessionId }).where(eq(orders.id, id)).returning();
+    return result[0];
+  }
+
+  async getOrdersBySession(sessionId: string): Promise<Order[]> {
+    return db.select().from(orders).where(eq(orders.sessionId, sessionId));
   }
 }
 
