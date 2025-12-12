@@ -39,7 +39,13 @@ export function Navbar() {
         </div>
 
         <Link href="/" className="flex items-center gap-2">
-          <img src={logo} alt="Casa Abuela" className="h-16 md:h-20 w-auto" />
+          <img 
+            src={logo} 
+            alt="Casa Abuela" 
+            className={`h-16 md:h-20 w-auto transition-opacity duration-300 ${
+              isScrolled ? "opacity-100" : "opacity-0"
+            }`} 
+          />
         </Link>
 
         <div className="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">

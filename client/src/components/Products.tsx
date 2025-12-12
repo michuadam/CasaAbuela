@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
@@ -9,16 +10,20 @@ import productBag from "@assets/Gemini_Generated_Image_49qvov49qvov49qv_17652378
 export function Products() {
   const { data: products = [], isLoading } = useProducts();
   const { addToCart } = useCart();
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
 
   const handleAddToCart = (productId: string, productTitle: string) => {
+    setAddingProductId(productId);
     addToCart.mutate(
       { productId, quantity: 1 },
       {
         onSuccess: () => {
           toast.success(`${productTitle} dodano do koszyka!`);
+          setAddingProductId(null);
         },
         onError: () => {
           toast.error("Nie udało się dodać do koszyka");
+          setAddingProductId(null);
         },
       }
     );
@@ -82,11 +87,11 @@ export function Products() {
                    </div>
                    <Button 
                     onClick={() => handleAddToCart(product.id, `${product.title} ${product.weight}`)}
-                    disabled={addToCart.isPending}
+                    disabled={addingProductId === product.id}
                     className="w-full bg-primary text-white hover:bg-primary/90 rounded-none h-10 uppercase tracking-widest text-xs"
                     data-testid={`button-add-to-cart-${product.id}`}
                   >
-                    <ShoppingBag className="mr-2 h-3 w-3" /> {addToCart.isPending ? "Dodaję..." : "Dodaj"}
+                    <ShoppingBag className="mr-2 h-3 w-3" /> {addingProductId === product.id ? "Dodaję..." : "Dodaj"}
                   </Button>
                 </div>
               </div>
