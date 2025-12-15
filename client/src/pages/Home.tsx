@@ -4,6 +4,7 @@ import { StorySection } from "@/components/StorySection";
 import { ProcessSection } from "@/components/ProcessSection";
 import { Products } from "@/components/Products";
 import { Footer } from "@/components/Footer";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 export default function Home() {
   return (
@@ -36,6 +37,7 @@ export default function Home() {
         </section>
       </main>
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }
