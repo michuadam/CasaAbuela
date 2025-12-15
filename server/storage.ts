@@ -7,10 +7,13 @@ import {
   type InsertNewsletterSubscriber,
   type Order,
   type InsertOrder,
+  type User,
+  type UpsertUser,
   products,
   cartItems,
   newsletterSubscribers,
-  orders
+  orders,
+  users
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and } from "drizzle-orm";
@@ -142,6 +145,27 @@ export class DbStorage implements IStorage {
 
   async getOrdersBySession(sessionId: string): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.sessionId, sessionId));
+  }
+
+  // Users (for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 }
 

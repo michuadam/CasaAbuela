@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/Navbar";
-import { ArrowLeft, MapPin, Package } from "lucide-react";
+import { ArrowLeft, MapPin, Package, User } from "lucide-react";
 import { toast } from "sonner";
 
 declare global {
@@ -18,6 +19,7 @@ declare global {
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { cartItems, cartTotal } = useCart();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<any>(null);
   const [geowidgetLoaded, setGeowidgetLoaded] = useState(false);
@@ -27,6 +29,20 @@ export default function Checkout() {
     customerEmail: "",
     customerPhone: "",
   });
+
+  // Pre-fill form with user data if logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const userData = user as any;
+      setFormData(prev => ({
+        ...prev,
+        customerName: userData.firstName && userData.lastName 
+          ? `${userData.firstName} ${userData.lastName}`.trim() 
+          : prev.customerName,
+        customerEmail: userData.email || prev.customerEmail,
+      }));
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -161,6 +177,49 @@ export default function Checkout() {
               <h1 className="font-serif text-3xl text-primary mb-2">Dane do wysyłki</h1>
               <p className="text-muted-foreground">Wypełnij formularz, aby kontynuować</p>
             </div>
+
+            {!isAuthenticated && (
+              <div className="bg-white border border-stone-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <User className="h-5 w-5 text-primary" />
+                  <h3 className="font-serif text-lg text-primary">Masz konto?</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Zaloguj się, aby automatycznie wypełnić dane i śledzić historię zamówień.
+                </p>
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => window.location.href = '/api/login'}
+                  className="w-full"
+                  data-testid="button-checkout-login"
+                >
+                  Zaloguj się lub utwórz konto
+                </Button>
+              </div>
+            )}
+
+            {isAuthenticated && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                    {(user as any)?.profileImageUrl ? (
+                      <img 
+                        src={(user as any).profileImageUrl} 
+                        alt="Profil" 
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-5 w-5 text-green-600" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-green-800">Zalogowano jako</p>
+                    <p className="text-sm text-green-600">{(user as any)?.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">

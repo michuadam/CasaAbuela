@@ -4,11 +4,39 @@ import { storage } from "./storage";
 import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema } from "@shared/schema";
 import { z } from "zod";
 import { getUncachableStripeClient } from "./stripeClient";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Setup authentication
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', (req: any, res) => {
+    if (!req.isAuthenticated || !req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    storage.getUser(userId)
+      .then(user => {
+        if (user) {
+          res.json(user);
+        } else {
+          res.status(404).json({ message: "User not found" });
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Failed to fetch user" });
+      });
+  });
   
   // Products
   app.get("/api/products", async (req, res) => {

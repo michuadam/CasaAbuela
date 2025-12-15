@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { ShoppingBag, Menu, X } from "lucide-react";
+import { ShoppingBag, Menu, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/useAuth";
 import { Cart } from "./Cart";
 import logo from "@assets/Casa_Abuela_1765220386882.png";
 
@@ -11,6 +13,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartCount } = useCart();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,10 +51,55 @@ export function Navbar() {
           />
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">
+        <div className="hidden md:flex items-center gap-6 font-medium text-sm tracking-wide">
           <a href="#process" className="hover:text-primary/80 transition-colors">
             PROCES
           </a>
+          
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="hover:bg-transparent"
+                  data-testid="button-user-menu"
+                >
+                  {(user as any)?.profileImageUrl ? (
+                    <img 
+                      src={(user as any).profileImageUrl} 
+                      alt="Profil" 
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem className="text-sm text-muted-foreground" disabled>
+                  {(user as any)?.email || "Moje konto"}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/api/logout" className="cursor-pointer" data-testid="button-logout">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Wyloguj się
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hover:bg-transparent"
+              onClick={() => window.location.href = '/api/login'}
+              data-testid="button-login"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          )}
+          
           <Button 
             variant="ghost" 
             size="icon" 
@@ -68,7 +116,37 @@ export function Navbar() {
           </Button>
         </div>
 
-        <div className="md:hidden flex items-center gap-4">
+        <div className="md:hidden flex items-center gap-3">
+          {isAuthenticated ? (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-inherit hover:bg-transparent"
+              onClick={() => window.location.href = '/api/logout'}
+              data-testid="button-logout-mobile"
+            >
+              {(user as any)?.profileImageUrl ? (
+                <img 
+                  src={(user as any).profileImageUrl} 
+                  alt="Profil" 
+                  className="h-7 w-7 rounded-full object-cover"
+                />
+              ) : (
+                <User className="h-5 w-5" />
+              )}
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-inherit hover:bg-transparent"
+              onClick={() => window.location.href = '/api/login'}
+              data-testid="button-login-mobile"
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          )}
+          
           <Button 
             variant="ghost" 
             size="icon" 
