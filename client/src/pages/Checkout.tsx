@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Navbar } from "@/components/Navbar";
-import { ArrowLeft, MapPin, Package, User } from "lucide-react";
+import { ArrowLeft, MapPin, Package, User, Building2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
 declare global {
@@ -24,10 +25,13 @@ export default function Checkout() {
   const [selectedPoint, setSelectedPoint] = useState<any>(null);
   const [geowidgetLoaded, setGeowidgetLoaded] = useState(false);
   
+  const [customerType, setCustomerType] = useState<"individual" | "company">("individual");
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
     customerPhone: "",
+    companyName: "",
+    companyNip: "",
   });
 
   // Pre-fill form with user data if logged in
@@ -110,6 +114,11 @@ export default function Checkout() {
       return;
     }
 
+    if (customerType === "company" && (!formData.companyName || !formData.companyNip)) {
+      toast.error("Proszę wypełnić dane firmy");
+      return;
+    }
+
     if (!selectedPoint) {
       toast.error("Proszę wybrać paczkomat");
       return;
@@ -123,6 +132,7 @@ export default function Checkout() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          customerType,
           inpostPointId: selectedPoint.name,
           inpostPointName: selectedPoint.address?.line1 || selectedPoint.name,
           inpostPointAddress: `${selectedPoint.address?.line1 || ''}, ${selectedPoint.address?.line2 || ''}`,
@@ -190,7 +200,7 @@ export default function Checkout() {
                 <Button 
                   type="button"
                   variant="outline"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/login'}
                   className="w-full"
                   data-testid="button-checkout-login"
                 >
@@ -223,6 +233,85 @@ export default function Checkout() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
+                <div className="bg-white border border-stone-200 rounded-lg p-4">
+                  <Label className="text-base font-medium mb-3 block">Typ klienta</Label>
+                  <RadioGroup 
+                    value={customerType} 
+                    onValueChange={(v) => setCustomerType(v as "individual" | "company")}
+                    className="flex gap-4"
+                  >
+                    <div 
+                      className={`flex-1 flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        customerType === "individual" 
+                          ? "border-primary bg-primary/5" 
+                          : "border-stone-200 hover:border-stone-300"
+                      }`}
+                      onClick={() => setCustomerType("individual")}
+                      data-testid="radio-individual"
+                    >
+                      <RadioGroupItem value="individual" id="individual" />
+                      <div>
+                        <Label htmlFor="individual" className="font-medium cursor-pointer">
+                          <User className="h-4 w-4 inline mr-2" />
+                          Osoba fizyczna
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">Paragon fiskalny</p>
+                      </div>
+                    </div>
+                    <div 
+                      className={`flex-1 flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        customerType === "company" 
+                          ? "border-primary bg-primary/5" 
+                          : "border-stone-200 hover:border-stone-300"
+                      }`}
+                      onClick={() => setCustomerType("company")}
+                      data-testid="radio-company"
+                    >
+                      <RadioGroupItem value="company" id="company" />
+                      <div>
+                        <Label htmlFor="company" className="font-medium cursor-pointer">
+                          <Building2 className="h-4 w-4 inline mr-2" />
+                          Firma
+                        </Label>
+                        <p className="text-xs text-muted-foreground mt-1">Faktura VAT</p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                {customerType === "company" && (
+                  <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 space-y-4">
+                    <h3 className="font-medium text-primary flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Dane firmy
+                    </h3>
+                    <div>
+                      <Label htmlFor="companyName">Nazwa firmy</Label>
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleInputChange}
+                        placeholder="Nazwa Sp. z o.o."
+                        className="mt-1"
+                        data-testid="input-company-name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="companyNip">NIP</Label>
+                      <Input
+                        id="companyNip"
+                        name="companyNip"
+                        value={formData.companyNip}
+                        onChange={handleInputChange}
+                        placeholder="1234567890"
+                        className="mt-1"
+                        data-testid="input-company-nip"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <Label htmlFor="customerName">Imię i nazwisko</Label>
                   <Input

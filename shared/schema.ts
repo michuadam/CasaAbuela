@@ -61,9 +61,12 @@ export const orders = pgTable("orders", {
   stripeSessionId: text("stripe_session_id"),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   status: text("status").notNull().default("pending"),
+  customerType: text("customer_type").notNull().default("individual"), // "individual" or "company"
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email").notNull(),
   customerPhone: text("customer_phone").notNull(),
+  companyName: text("company_name"),
+  companyNip: text("company_nip"),
   shippingAddress: text("shipping_address"),
   inpostPointId: text("inpost_point_id"),
   inpostPointName: text("inpost_point_name"),

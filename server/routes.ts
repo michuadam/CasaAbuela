@@ -141,10 +141,24 @@ export async function registerRoutes(
   app.post("/api/checkout", async (req, res) => {
     try {
       const sessionId = req.session.id;
-      const { customerName, customerEmail, customerPhone, inpostPointId, inpostPointName, inpostPointAddress } = req.body;
+      const { 
+        customerName, 
+        customerEmail, 
+        customerPhone, 
+        customerType,
+        companyName,
+        companyNip,
+        inpostPointId, 
+        inpostPointName, 
+        inpostPointAddress 
+      } = req.body;
 
       if (!customerName || !customerEmail || !customerPhone) {
         return res.status(400).json({ error: "Missing customer information" });
+      }
+
+      if (customerType === "company" && (!companyName || !companyNip)) {
+        return res.status(400).json({ error: "Missing company information" });
       }
 
       const cartItems = await storage.getCartItems(sessionId);
@@ -160,9 +174,12 @@ export async function registerRoutes(
       const order = await storage.createOrder({
         sessionId,
         status: "pending",
+        customerType: customerType || "individual",
         customerName,
         customerEmail,
         customerPhone,
+        companyName: customerType === "company" ? companyName : null,
+        companyNip: customerType === "company" ? companyNip : null,
         inpostPointId: inpostPointId || null,
         inpostPointName: inpostPointName || null,
         inpostPointAddress: inpostPointAddress || null,

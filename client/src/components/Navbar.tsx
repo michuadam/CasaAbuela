@@ -93,7 +93,7 @@ export function Navbar() {
               variant="ghost" 
               size="icon" 
               className="hover:bg-transparent"
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               data-testid="button-login"
             >
               <User className="h-5 w-5" />
@@ -140,7 +140,7 @@ export function Navbar() {
               variant="ghost" 
               size="icon" 
               className="text-inherit hover:bg-transparent"
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               data-testid="button-login-mobile"
             >
               <User className="h-5 w-5" />
