@@ -240,42 +240,42 @@ export default function Checkout() {
                     onValueChange={(v) => setCustomerType(v as "individual" | "company")}
                     className="flex gap-4"
                   >
-                    <div 
+                    <label 
+                      htmlFor="individual"
                       className={`flex-1 flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         customerType === "individual" 
                           ? "border-primary bg-primary/5" 
                           : "border-stone-200 hover:border-stone-300"
                       }`}
-                      onClick={() => setCustomerType("individual")}
                       data-testid="radio-individual"
                     >
                       <RadioGroupItem value="individual" id="individual" />
                       <div>
-                        <Label htmlFor="individual" className="font-medium cursor-pointer">
+                        <span className="font-medium">
                           <User className="h-4 w-4 inline mr-2" />
                           Osoba fizyczna
-                        </Label>
+                        </span>
                         <p className="text-xs text-muted-foreground mt-1">Paragon fiskalny</p>
                       </div>
-                    </div>
-                    <div 
+                    </label>
+                    <label 
+                      htmlFor="company"
                       className={`flex-1 flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         customerType === "company" 
                           ? "border-primary bg-primary/5" 
                           : "border-stone-200 hover:border-stone-300"
                       }`}
-                      onClick={() => setCustomerType("company")}
                       data-testid="radio-company"
                     >
                       <RadioGroupItem value="company" id="company" />
                       <div>
-                        <Label htmlFor="company" className="font-medium cursor-pointer">
+                        <span className="font-medium">
                           <Building2 className="h-4 w-4 inline mr-2" />
                           Firma
-                        </Label>
+                        </span>
                         <p className="text-xs text-muted-foreground mt-1">Faktura VAT</p>
                       </div>
-                    </div>
+                    </label>
                   </RadioGroup>
                 </div>
 
