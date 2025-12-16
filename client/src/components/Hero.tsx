@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import heroBg from "@assets/IMG20251207122133_1765220354258.jpg";
+import heroBg from "@assets/babcia_1765901073440.webp";
 
 export function Hero() {
   return (
@@ -12,8 +12,8 @@ export function Hero() {
           alt="Plantacja kawy Casa Abuela"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/30 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-black/20 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
       </div>
 
       {/* Content */}
@@ -51,17 +51,6 @@ export function Hero() {
           </Button>
         </motion.div>
       </div>
-      
-      {/* Scroll Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/70 flex flex-col items-center gap-2"
-      >
-        <span className="text-[10px] tracking-widest uppercase">Przewiń</span>
-        <div className="w-[1px] h-12 bg-white/40" />
-      </motion.div>
     </section>
   );
 }
