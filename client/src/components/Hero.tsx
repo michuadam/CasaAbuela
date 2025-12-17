@@ -46,6 +46,13 @@ export function Hero() {
           <Button 
             size="lg" 
             className="bg-white text-primary hover:bg-stone-100 rounded-none px-8 py-6 text-base tracking-wide font-medium border border-transparent hover:border-white/20 transition-all duration-300"
+            onClick={() => {
+              const element = document.getElementById('products');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            data-testid="button-discover-beans"
           >
             ODKRYJ NASZE ZIARNA
           </Button>

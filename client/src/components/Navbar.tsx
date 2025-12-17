@@ -33,10 +33,24 @@ export function Navbar() {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         <div className="hidden md:flex items-center gap-8 font-medium text-sm tracking-wide">
-          <a href="#story" className="hover:text-primary/80 transition-colors">
+          <a 
+            href="#story" 
+            className="hover:text-primary/80 transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('story')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             O NAS
           </a>
-          <a href="#products" className="hover:text-primary/80 transition-colors">
+          <a 
+            href="#products" 
+            className="hover:text-primary/80 transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             SKLEP
           </a>
         </div>
@@ -52,7 +66,14 @@ export function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6 font-medium text-sm tracking-wide">
-          <a href="#process" className="hover:text-primary/80 transition-colors">
+          <a 
+            href="#process" 
+            className="hover:text-primary/80 transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             PROCES
           </a>
           
@@ -169,10 +190,46 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#F9F7F2] border-none w-[300px]">
               <div className="flex flex-col gap-8 mt-12 items-center font-serif text-xl">
-                <a href="#story" className="text-primary hover:text-primary/70">O Nas</a>
-                <a href="#products" className="text-primary hover:text-primary/70">Sklep</a>
-                <a href="#process" className="text-primary hover:text-primary/70">Proces</a>
-                <a href="#contact" className="text-primary hover:text-primary/70">Kontakt</a>
+                <a 
+                  href="#story" 
+                  className="text-primary hover:text-primary/70 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('story')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  O Nas
+                </a>
+                <a 
+                  href="#products" 
+                  className="text-primary hover:text-primary/70 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Sklep
+                </a>
+                <a 
+                  href="#process" 
+                  className="text-primary hover:text-primary/70 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Proces
+                </a>
+                <a 
+                  href="#contact" 
+                  className="text-primary hover:text-primary/70 cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Kontakt
+                </a>
               </div>
             </SheetContent>
           </Sheet>
