@@ -5,6 +5,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { getStripeSync } from "./stripeClient";
 import { WebhookHandlers } from "./webhookHandlers";
+import { seedProducts } from "./seedProducts";
 
 const app = express();
 const httpServer = createServer(app);
@@ -69,6 +70,7 @@ async function initStripe() {
 }
 
 (async () => {
+  await seedProducts();
   await initStripe();
 
   app.post(
