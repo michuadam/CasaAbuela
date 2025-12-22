@@ -1,10 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema } from "@shared/schema";
+import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema, updateProductSchema, insertProductImageSchema } from "@shared/schema";
 import { z } from "zod";
 import { getUncachableStripeClient } from "./stripeClient";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -291,6 +291,110 @@ export async function registerRoutes(
       res.json(order);
     } catch (error) {
       res.status(500).json({ error: "Failed to get order" });
+    }
+  });
+
+  // ============ ADMIN API ============
+
+  // Check if current user is admin
+  app.get("/api/admin/check", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.json({ isAdmin: false });
+      }
+      const user = await storage.getUser(userId);
+      res.json({ isAdmin: user?.isAdmin === 1 });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check admin status" });
+    }
+  });
+
+  // Admin: Get all products
+  app.get("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  // Admin: Create product
+  app.post("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create product" });
+    }
+  });
+
+  // Admin: Update product
+  app.patch("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const updateData = updateProductSchema.parse(req.body);
+      const product = await storage.updateProduct(req.params.id, updateData);
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  });
+
+  // Admin: Delete product
+  app.delete("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteProduct(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete product" });
+    }
+  });
+
+  // Admin: Get product images
+  app.get("/api/admin/products/:id/images", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const images = await storage.getProductImages(req.params.id);
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch product images" });
+    }
+  });
+
+  // Admin: Add product image
+  app.post("/api/admin/products/:id/images", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const imageData = insertProductImageSchema.parse({
+        ...req.body,
+        productId: req.params.id,
+      });
+      const image = await storage.createProductImage(imageData);
+      res.json(image);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to add product image" });
+    }
+  });
+
+  // Admin: Delete product image
+  app.delete("/api/admin/images/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteProductImage(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete product image" });
     }
   });
 
