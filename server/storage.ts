@@ -1,6 +1,7 @@
 import { 
   type Product, 
   type InsertProduct,
+  type UpdateProduct,
   type CartItem,
   type InsertCartItem,
   type NewsletterSubscriber,
@@ -9,7 +10,10 @@ import {
   type InsertOrder,
   type User,
   type UpsertUser,
+  type ProductImage,
+  type InsertProductImage,
   products,
+  productImages,
   cartItems,
   newsletterSubscribers,
   orders,
@@ -22,7 +26,15 @@ export interface IStorage {
   // Products
   getProducts(): Promise<Product[]>;
   getProduct(id: string): Promise<Product | undefined>;
+  getProductBySlug(slug: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, data: UpdateProduct): Promise<Product | undefined>;
+  deleteProduct(id: string): Promise<void>;
+  
+  // Product Images
+  getProductImages(productId: string): Promise<ProductImage[]>;
+  createProductImage(image: InsertProductImage): Promise<ProductImage>;
+  deleteProductImage(id: string): Promise<void>;
   
   // Cart
   getCartItems(sessionId: string): Promise<(CartItem & { product: Product })[]>;
@@ -49,6 +61,35 @@ export class DbStorage implements IStorage {
   async createProduct(product: InsertProduct): Promise<Product> {
     const result = await db.insert(products).values(product).returning();
     return result[0];
+  }
+
+  async getProductBySlug(slug: string): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.slug, slug));
+    return result[0];
+  }
+
+  async updateProduct(id: string, data: UpdateProduct): Promise<Product | undefined> {
+    const result = await db.update(products).set(data).where(eq(products.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    await db.delete(productImages).where(eq(productImages.productId, id));
+    await db.delete(products).where(eq(products.id, id));
+  }
+
+  // Product Images
+  async getProductImages(productId: string): Promise<ProductImage[]> {
+    return db.select().from(productImages).where(eq(productImages.productId, productId));
+  }
+
+  async createProductImage(image: InsertProductImage): Promise<ProductImage> {
+    const result = await db.insert(productImages).values(image).returning();
+    return result[0];
+  }
+
+  async deleteProductImage(id: string): Promise<void> {
+    await db.delete(productImages).where(eq(productImages.id, id));
   }
 
   // Cart

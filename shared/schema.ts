@@ -30,14 +30,28 @@ export type User = typeof users.$inferSelect;
 
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").unique(),
   title: text("title").notNull(),
   weight: text("weight").notNull(),
   type: text("type").notNull(), // "beans" or "ground"
   roast: text("roast").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   description: text("description").notNull(),
+  shortDescription: text("short_description"),
+  origin: text("origin"),
+  tastingNotes: text("tasting_notes"),
   imageUrl: text("image_url"),
   inStock: integer("in_stock").notNull().default(1),
+  isAdmin: integer("is_admin").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const productImages = pgTable("product_images", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  imageUrl: text("image_url").notNull(),
+  altText: text("alt_text"),
+  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -81,6 +95,16 @@ export const insertProductSchema = createInsertSchema(products).omit({
   createdAt: true,
 });
 
+export const updateProductSchema = createInsertSchema(products).omit({
+  id: true,
+  createdAt: true,
+}).partial();
+
+export const insertProductImageSchema = createInsertSchema(productImages).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertCartItemSchema = createInsertSchema(cartItems).omit({
   id: true,
   createdAt: true,
@@ -92,7 +116,11 @@ export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSub
 });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type UpdateProduct = z.infer<typeof updateProductSchema>;
 export type Product = typeof products.$inferSelect;
+
+export type InsertProductImage = z.infer<typeof insertProductImageSchema>;
+export type ProductImage = typeof productImages.$inferSelect;
 
 export type InsertCartItem = z.infer<typeof insertCartItemSchema>;
 export type CartItem = typeof cartItems.$inferSelect;
