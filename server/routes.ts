@@ -48,13 +48,18 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/products/:id", async (req, res) => {
+  app.get("/api/products/:slug", async (req, res) => {
     try {
-      const product = await storage.getProduct(req.params.id);
+      const { slug } = req.params;
+      let product = await storage.getProductBySlug(slug);
+      if (!product) {
+        product = await storage.getProduct(slug);
+      }
       if (!product) {
         return res.status(404).json({ error: "Product not found" });
       }
-      res.json(product);
+      const images = await storage.getProductImages(product.id);
+      res.json({ product, images });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch product" });
     }

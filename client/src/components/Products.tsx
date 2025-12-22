@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
@@ -62,24 +63,26 @@ export function Products() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               className="group flex flex-col h-full"
             >
-              <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#F9F7F2] rounded-sm p-6 flex items-center justify-center">
-                 <img 
-                  src={productBag} 
-                  alt={`${product.title} ${product.weight}`}
-                  className="w-full h-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
-                  data-testid={`img-product-${product.id}`}
-                />
-              </div>
+              <Link href={`/product/${product.slug || product.id}`} className="block">
+                <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#F9F7F2] rounded-sm p-6 flex items-center justify-center cursor-pointer">
+                   <img 
+                    src={productBag} 
+                    alt={`${product.title} ${product.weight}`}
+                    className="w-full h-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
+                    data-testid={`img-product-${product.id}`}
+                  />
+                </div>
+              </Link>
               
               <div className="text-center space-y-2 flex-grow flex flex-col justify-between">
-                <div>
-                  <h3 className="font-serif text-xl text-primary font-medium" data-testid={`text-product-name-${product.id}`}>
+                <Link href={`/product/${product.slug || product.id}`} className="block">
+                  <h3 className="font-serif text-xl text-primary font-medium hover:underline cursor-pointer" data-testid={`text-product-name-${product.id}`}>
                     {product.title} <span className="text-primary/60 font-sans text-base">{product.weight}</span>
                   </h3>
                   <p className="text-sm text-muted-foreground mt-2 font-light leading-relaxed px-2">
-                    {product.description}
+                    {product.shortDescription || product.description}
                   </p>
-                </div>
+                </Link>
                 
                 <div className="pt-4">
                    <div className="text-lg font-semibold text-primary mb-3" data-testid={`text-price-${product.id}`}>

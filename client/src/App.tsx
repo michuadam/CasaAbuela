@@ -8,11 +8,13 @@ import Home from "@/pages/Home";
 import Checkout from "@/pages/Checkout";
 import OrderSuccess from "@/pages/OrderSuccess";
 import Login from "@/pages/Login";
+import ProductDetail from "@/pages/ProductDetail";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/product/:slug" component={ProductDetail} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/order-success" component={OrderSuccess} />
       <Route path="/login" component={Login} />
