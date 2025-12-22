@@ -166,7 +166,7 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
   }
 
   const dbUser = await storage.getUser(user.claims.sub);
-  if (!dbUser || !dbUser.isAdmin) {
+  if (!dbUser || dbUser.isAdmin !== true) {
     return res.status(403).json({ message: "Forbidden - Admin access required" });
   }
 

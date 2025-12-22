@@ -304,7 +304,7 @@ export async function registerRoutes(
         return res.json({ isAdmin: false });
       }
       const user = await storage.getUser(userId);
-      res.json({ isAdmin: user?.isAdmin === 1 });
+      res.json({ isAdmin: user?.isAdmin === true });
     } catch (error) {
       res.status(500).json({ error: "Failed to check admin status" });
     }
