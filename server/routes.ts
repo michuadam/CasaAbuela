@@ -1,41 +1,106 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema, updateProductSchema, insertProductImageSchema } from "@shared/schema";
+import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSchema, updateProductSchema, insertProductImageSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { getUncachableStripeClient } from "./stripeClient";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   // Setup authentication
-  await setupAuth(app);
+  setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', (req: any, res) => {
-    if (!req.isAuthenticated || !req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    
-    const userId = req.user?.claims?.sub;
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    
-    storage.getUser(userId)
-      .then(user => {
-        if (user) {
-          res.json(user);
-        } else {
-          res.status(404).json({ message: "User not found" });
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching user:", error);
-        res.status(500).json({ message: "Failed to fetch user" });
+  // Auth routes - Register
+  app.post('/api/register', async (req: any, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email i hasło są wymagane" });
+      }
+
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Użytkownik z tym adresem email już istnieje" });
+      }
+
+      const user = await storage.createUser({ email, password, firstName, lastName });
+      req.session.userId = user.id;
+      
+      res.json({ 
+        id: user.id, 
+        email: user.email, 
+        firstName: user.firstName, 
+        lastName: user.lastName,
+        isAdmin: user.isAdmin 
       });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Błąd podczas rejestracji" });
+    }
+  });
+
+  // Auth routes - Login
+  app.post('/api/login', async (req: any, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email i hasło są wymagane" });
+      }
+
+      const user = await storage.verifyPassword(email, password);
+      if (!user) {
+        return res.status(401).json({ message: "Nieprawidłowy email lub hasło" });
+      }
+
+      req.session.userId = user.id;
+      
+      res.json({ 
+        id: user.id, 
+        email: user.email, 
+        firstName: user.firstName, 
+        lastName: user.lastName,
+        isAdmin: user.isAdmin 
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Błąd podczas logowania" });
+    }
+  });
+
+  // Auth routes - Logout
+  app.post('/api/logout', (req: any, res) => {
+    req.session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Błąd podczas wylogowywania" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ success: true });
+    });
+  });
+
+  // Auth routes - Get current user
+  app.get('/api/auth/user', async (req: any, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.json({ 
+      id: user.id, 
+      email: user.email, 
+      firstName: user.firstName, 
+      lastName: user.lastName,
+      isAdmin: user.isAdmin 
+    });
   });
   
   // Products
@@ -296,18 +361,18 @@ export async function registerRoutes(
 
   // ============ ADMIN API ============
 
-  // Check if current user is admin (temporarily bypassed for testing)
-  app.get("/api/admin/check", async (req: any, res) => {
+  // Check if current user is admin
+  app.get("/api/admin/check", isAuthenticated, async (req: any, res) => {
     try {
-      // Temporarily return true for testing
-      res.json({ isAdmin: true });
+      const user = await storage.getUser(req.session.userId);
+      res.json({ isAdmin: user?.isAdmin === true });
     } catch (error) {
       res.status(500).json({ error: "Failed to check admin status" });
     }
   });
 
-  // Admin: Get all products (temporarily without auth for testing)
-  app.get("/api/admin/products", async (req, res) => {
+  // Admin: Get all products
+  app.get("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const products = await storage.getProducts();
       res.json(products);
@@ -316,8 +381,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Create product (temporarily without auth for testing)
-  app.post("/api/admin/products", async (req, res) => {
+  // Admin: Create product
+  app.post("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const productData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(productData);
@@ -330,8 +395,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Update product (temporarily without auth for testing)
-  app.patch("/api/admin/products/:id", async (req, res) => {
+  // Admin: Update product
+  app.patch("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const updateData = updateProductSchema.parse(req.body);
       const product = await storage.updateProduct(req.params.id, updateData);
@@ -347,8 +412,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Delete product (temporarily without auth for testing)
-  app.delete("/api/admin/products/:id", async (req, res) => {
+  // Admin: Delete product
+  app.delete("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       await storage.deleteProduct(req.params.id);
       res.json({ success: true });
@@ -357,8 +422,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Get product images (temporarily without auth for testing)
-  app.get("/api/admin/products/:id/images", async (req, res) => {
+  // Admin: Get product images
+  app.get("/api/admin/products/:id/images", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const images = await storage.getProductImages(req.params.id);
       res.json(images);
@@ -367,8 +432,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Add product image (temporarily without auth for testing)
-  app.post("/api/admin/products/:id/images", async (req, res) => {
+  // Admin: Add product image
+  app.post("/api/admin/products/:id/images", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const imageData = insertProductImageSchema.parse({
         ...req.body,
@@ -384,8 +449,8 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Delete product image (temporarily without auth for testing)
-  app.delete("/api/admin/images/:id", async (req, res) => {
+  // Admin: Delete product image
+  app.delete("/api/admin/images/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       await storage.deleteProductImage(req.params.id);
       res.json({ success: true });

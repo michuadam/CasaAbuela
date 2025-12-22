@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X, Image } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,25 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/hooks/use-auth";
 import type { Product } from "@shared/schema";
 
 export default function Admin() {
   const queryClient = useQueryClient();
+  const { user, isAuthenticated, isLoading: authLoading, isAdmin } = useAuth();
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Product>>({});
-
-  const { data: adminCheck, isLoading: checkingAdmin } = useQuery({
-    queryKey: ["admin-check"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/check");
-      if (!res.ok) {
-        if (res.status === 401) return { isAdmin: false, notLoggedIn: true };
-        throw new Error("Failed to check admin status");
-      }
-      return res.json();
-    },
-  });
 
   const { data: products = [], isLoading: loadingProducts } = useQuery<Product[]>({
     queryKey: ["admin-products"],
@@ -37,7 +27,7 @@ export default function Admin() {
       if (!res.ok) throw new Error("Failed to fetch products");
       return res.json();
     },
-    enabled: adminCheck?.isAdmin === true,
+    enabled: isAdmin,
   });
 
   const updateProduct = useMutation({
@@ -143,7 +133,7 @@ export default function Admin() {
     createProduct.mutate({ ...editForm, slug });
   };
 
-  if (checkingAdmin) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
@@ -154,22 +144,22 @@ export default function Admin() {
     );
   }
 
-  if (adminCheck?.notLoggedIn) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
         <div className="container mx-auto px-4 md:px-6 py-32 text-center">
           <h1 className="font-serif text-3xl text-primary mb-4">Zaloguj się</h1>
           <p className="text-muted-foreground mb-8">Musisz się zalogować, aby uzyskać dostęp do panelu admina.</p>
-          <a href="/api/login">
+          <Link href="/login">
             <Button className="rounded-none" data-testid="button-login">Zaloguj się</Button>
-          </a>
+          </Link>
         </div>
       </div>
     );
   }
 
-  if (!adminCheck?.isAdmin) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />

@@ -9,7 +9,7 @@ import {
   type Order,
   type InsertOrder,
   type User,
-  type UpsertUser,
+  type InsertUser,
   type ProductImage,
   type InsertProductImage,
   products,
@@ -21,6 +21,7 @@ import {
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export interface IStorage {
   // Products
@@ -188,23 +189,42 @@ export class DbStorage implements IStorage {
     return db.select().from(orders).where(eq(orders.sessionId, sessionId));
   }
 
-  // Users (for Replit Auth)
+  // Users
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
     const [user] = await db
       .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+      .values({
+        ...userData,
+        password: hashedPassword,
       })
+      .returning();
+    return user;
+  }
+
+  async verifyPassword(email: string, password: string): Promise<User | null> {
+    const user = await this.getUserByEmail(email);
+    if (!user) return null;
+    
+    const isValid = await bcrypt.compare(password, user.password);
+    return isValid ? user : null;
+  }
+
+  async setUserAdmin(id: string, isAdmin: boolean): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ isAdmin, updatedAt: new Date() })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
