@@ -30,10 +30,12 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL via Drizzle ORM
 - **Schema Location**: `shared/schema.ts` contains all table definitions
 - **Tables**:
-  - `products`: Coffee products with title, weight, type, roast level, price, description
+  - `products`: Coffee products with title, slug (unique URL-friendly identifier), weight, type, roast level, price, description, shortDescription, origin, tastingNotes
+  - `productImages`: Product gallery images with productId, imageUrl, altText, sortOrder
   - `cartItems`: Shopping cart items linked to session IDs
   - `newsletterSubscribers`: Email newsletter subscriptions
   - `orders`: Order records with customer details, InPost point info, and Stripe session IDs
+  - `users`: User accounts with isAdmin boolean for admin access
 - **Migrations**: Drizzle Kit with `db:push` command for schema synchronization
 
 ### Payment Integration
@@ -47,11 +49,12 @@ Preferred communication style: Simple, everyday language.
 │   ├── src/
 │   │   ├── components/  # React components including shadcn/ui
 │   │   ├── hooks/       # Custom React hooks (use-cart, use-products)
-│   │   ├── pages/       # Route pages (Home, Checkout, OrderSuccess)
+│   │   ├── pages/       # Route pages (Home, Checkout, OrderSuccess, ProductDetail, Admin)
 │   │   └── lib/         # Utilities and query client
 ├── server/          # Express backend
 │   ├── index.ts     # Server entry point
-│   ├── routes.ts    # API route definitions
+│   ├── routes.ts    # API route definitions (public + admin endpoints)
+│   ├── replitAuth.ts # Authentication with isAdmin middleware
 │   ├── storage.ts   # Database access layer
 │   └── stripeClient.ts  # Stripe integration
 ├── shared/          # Shared code between client/server
@@ -59,6 +62,12 @@ Preferred communication style: Simple, everyday language.
 └── db/              # Database configuration
     └── index.ts     # PostgreSQL client setup
 ```
+
+### Admin Panel
+- **Route**: `/admin` - Product management interface
+- **Authentication**: Replit Auth with isAdmin flag check
+- **Features**: CRUD operations for products, image management
+- **API Endpoints**: `/api/admin/*` protected by isAdmin middleware
 
 ## External Dependencies
 
