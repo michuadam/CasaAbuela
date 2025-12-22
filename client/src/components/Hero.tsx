@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import heroBg from "@assets/babcia_1765901073440.webp";
+import heroBg from "@assets/babcia_new_1766367642126.webp";
 
 export function Hero() {
   return (
@@ -12,30 +12,29 @@ export function Hero() {
           alt="Plantacja kawy Casa Abuela"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/20 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-black/10 mix-blend-multiply" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center text-white">
+      {/* Content - positioned to the right to avoid overlapping left side text */}
+      <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-end text-right text-white pr-8 md:pr-16">
         
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight"
+          className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight max-w-lg"
         >
-          Kawa z Serca <br />
-          Regionu Huila
+          Kawa z Serca Huila
         </motion.h1>
         
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg md:text-xl max-w-2xl mb-10 text-white/90 font-light leading-relaxed"
+          className="text-base md:text-lg max-w-md mb-8 text-white/90 font-light leading-relaxed"
         >
-          Rodzinna tradycja, wulkaniczna gleba i pasja przekazywana z pokolenia na pokolenie. Odkryj smak prawdziwej kolumbijskiej kawy.
+          Prawdziwa kolumbijska kawa prosto z rodzinnej plantacji.
         </motion.p>
         
         <motion.div
