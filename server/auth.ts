@@ -12,11 +12,16 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
+  sessionStore.on('error', (error) => {
+    console.error('Session store error:', error);
+  });
+
   return session({
     secret: process.env.SESSION_SECRET || "casa-abuela-secret-key-2024",
     store: sessionStore,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

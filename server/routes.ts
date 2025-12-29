@@ -52,7 +52,14 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Email i hasło są wymagane" });
       }
 
-      const user = await storage.verifyPassword(email, password);
+      let user;
+      try {
+        user = await storage.verifyPassword(email, password);
+      } catch (dbError) {
+        console.error("Database error during login:", dbError);
+        return res.status(500).json({ message: "Błąd połączenia z bazą danych" });
+      }
+      
       if (!user) {
         return res.status(401).json({ message: "Nieprawidłowy email lub hasło" });
       }
