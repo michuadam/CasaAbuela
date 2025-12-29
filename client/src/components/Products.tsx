@@ -66,7 +66,7 @@ export function Products() {
               <Link href={`/product/${product.slug || product.id}`} className="block">
                 <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#F9F7F2] rounded-sm p-6 flex items-center justify-center cursor-pointer">
                    <img 
-                    src={productBag} 
+                    src={product.imageUrl || productBag} 
                     alt={`${product.title} ${product.weight}`}
                     className="w-full h-full object-contain drop-shadow-xl group-hover:scale-105 transition-transform duration-500"
                     data-testid={`img-product-${product.id}`}
