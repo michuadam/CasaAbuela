@@ -1,17 +1,185 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X, Upload, Image, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/hooks/use-auth";
+import { useUpload } from "@/hooks/use-upload";
 import type { Product } from "@shared/schema";
+
+function HomepageSettings() {
+  const queryClient = useQueryClient();
+  const [heroImage, setHeroImage] = useState("");
+  const [aboutImage, setAboutImage] = useState("");
+  
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: () => {
+      toast.success("Zdjęcie przesłane!");
+    },
+    onError: () => {
+      toast.error("Nie udało się przesłać zdjęcia");
+    },
+  });
+
+  const { data: settings, isLoading } = useQuery<Record<string, string>>({
+    queryKey: ["site-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/site-settings");
+      if (!res.ok) throw new Error("Failed to fetch settings");
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (settings) {
+      setHeroImage(settings.heroImage || "");
+      setAboutImage(settings.aboutImage || "");
+    }
+  }, [settings]);
+
+  const updateSetting = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const res = await fetch(`/api/admin/site-settings/${key}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value }),
+      });
+      if (!res.ok) throw new Error("Failed to update setting");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["site-settings"] });
+      toast.success("Ustawienie zapisane!");
+    },
+    onError: () => {
+      toast.error("Nie udało się zapisać ustawienia");
+    },
+  });
+
+  const handleUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    settingKey: string,
+    setter: (value: string) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const response = await uploadFile(file);
+      if (response) {
+        setter(response.objectPath);
+        updateSetting.mutate({ key: settingKey, value: response.objectPath });
+      }
+    }
+    e.target.value = "";
+  };
+
+  const saveUrl = (key: string, value: string) => {
+    updateSetting.mutate({ key, value });
+  };
+
+  if (isLoading) {
+    return <p className="text-muted-foreground">Ładowanie ustawień...</p>;
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="font-serif text-xl text-primary mb-4">Zdjęcie Hero (główny baner)</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Główne zdjęcie wyświetlane na górze strony głównej.
+        </p>
+        <div className="flex gap-2 mb-4">
+          <Input
+            value={heroImage || settings?.heroImage || ""}
+            onChange={(e) => setHeroImage(e.target.value)}
+            placeholder="URL zdjęcia lub prześlij plik..."
+            className="flex-1"
+            data-testid="input-hero-image"
+          />
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleUpload(e, "heroImage", setHeroImage)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isUploading}
+            />
+            <Button variant="outline" disabled={isUploading} className="rounded-none">
+              <Upload className="h-4 w-4 mr-2" />
+              {isUploading ? "Przesyłam..." : "Prześlij"}
+            </Button>
+          </div>
+          <Button
+            onClick={() => saveUrl("heroImage", heroImage)}
+            disabled={updateSetting.isPending}
+            className="rounded-none"
+          >
+            <Save className="h-4 w-4 mr-2" /> Zapisz
+          </Button>
+        </div>
+        {(heroImage || settings?.heroImage) && (
+          <img
+            src={heroImage || settings?.heroImage}
+            alt="Podgląd Hero"
+            className="w-full max-w-md h-48 object-cover border"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="font-serif text-xl text-primary mb-4">Zdjęcie sekcji "O nas"</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Zdjęcie wyświetlane w sekcji opisującej historię plantacji.
+        </p>
+        <div className="flex gap-2 mb-4">
+          <Input
+            value={aboutImage || settings?.aboutImage || ""}
+            onChange={(e) => setAboutImage(e.target.value)}
+            placeholder="URL zdjęcia lub prześlij plik..."
+            className="flex-1"
+            data-testid="input-about-image"
+          />
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleUpload(e, "aboutImage", setAboutImage)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isUploading}
+            />
+            <Button variant="outline" disabled={isUploading} className="rounded-none">
+              <Upload className="h-4 w-4 mr-2" />
+              {isUploading ? "Przesyłam..." : "Prześlij"}
+            </Button>
+          </div>
+          <Button
+            onClick={() => saveUrl("aboutImage", aboutImage)}
+            disabled={updateSetting.isPending}
+            className="rounded-none"
+          >
+            <Save className="h-4 w-4 mr-2" /> Zapisz
+          </Button>
+        </div>
+        {(aboutImage || settings?.aboutImage) && (
+          <img
+            src={aboutImage || settings?.aboutImage}
+            alt="Podgląd O nas"
+            className="w-full max-w-md h-48 object-cover border"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -19,6 +187,25 @@ export default function Admin() {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Product>>({});
+  const [activeTab, setActiveTab] = useState("products");
+  
+  const { uploadFile, isUploading } = useUpload({
+    onSuccess: (response) => {
+      setEditForm({ ...editForm, imageUrl: response.objectPath });
+      toast.success("Zdjęcie przesłane!");
+    },
+    onError: (error) => {
+      toast.error("Nie udało się przesłać zdjęcia");
+    },
+  });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file);
+    }
+    e.target.value = "";
+  };
 
   const { data: products = [], isLoading: loadingProducts } = useQuery<Product[]>({
     queryKey: ["admin-products"],
@@ -191,10 +378,24 @@ export default function Admin() {
               </Link>
               <h1 className="font-serif text-3xl text-primary">Panel Administracyjny</h1>
             </div>
-            <Button onClick={startCreate} className="bg-primary text-white rounded-none" data-testid="button-add-product">
-              <Plus className="mr-2 h-4 w-4" /> Dodaj produkt
-            </Button>
           </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="bg-white border">
+              <TabsTrigger value="products" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <Image className="h-4 w-4 mr-2" /> Produkty
+              </TabsTrigger>
+              <TabsTrigger value="homepage" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <Settings className="h-4 w-4 mr-2" /> Strona główna
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="products" className="space-y-4">
+              <div className="flex justify-end">
+                <Button onClick={startCreate} className="bg-primary text-white rounded-none" data-testid="button-add-product">
+                  <Plus className="mr-2 h-4 w-4" /> Dodaj produkt
+                </Button>
+              </div>
 
           {loadingProducts ? (
             <p className="text-muted-foreground">Ładowanie produktów...</p>
@@ -257,6 +458,12 @@ export default function Admin() {
               </div>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="homepage" className="space-y-6">
+              <HomepageSettings />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
@@ -406,14 +613,46 @@ export default function Admin() {
             </div>
 
             <div className="col-span-2">
-              <Label htmlFor="imageUrl">URL zdjęcia</Label>
-              <Input
-                id="imageUrl"
-                value={editForm.imageUrl || ""}
-                onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                placeholder="https://..."
-                data-testid="input-image-url"
-              />
+              <Label htmlFor="imageUrl">Zdjęcie produktu</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="imageUrl"
+                  value={editForm.imageUrl || ""}
+                  onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
+                  placeholder="URL zdjęcia lub prześlij plik..."
+                  data-testid="input-image-url"
+                  className="flex-1"
+                />
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={isUploading}
+                    data-testid="input-file-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isUploading}
+                    className="rounded-none"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploading ? "Przesyłam..." : "Prześlij"}
+                  </Button>
+                </div>
+              </div>
+              {editForm.imageUrl && (
+                <div className="mt-2">
+                  <img
+                    src={editForm.imageUrl}
+                    alt="Podgląd"
+                    className="w-32 h-32 object-cover border"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
