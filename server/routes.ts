@@ -64,6 +64,20 @@ export async function registerRoutes(
         return res.status(401).json({ message: "Nieprawidłowy email lub hasło" });
       }
 
+      // Auto-grant admin for owner email
+      const ADMIN_EMAIL = "adamski.michal.2@gmail.com";
+      if (user.email === ADMIN_EMAIL && user.isAdmin !== true) {
+        try {
+          const updatedUser = await storage.setUserAdmin(user.id, true);
+          if (updatedUser) {
+            user = updatedUser;
+            console.log(`Auto-granted admin rights to ${ADMIN_EMAIL}`);
+          }
+        } catch (e) {
+          console.error("Failed to auto-grant admin:", e);
+        }
+      }
+
       req.session.userId = user.id;
       
       res.json({ 
