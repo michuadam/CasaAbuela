@@ -39,14 +39,22 @@ export const isAuthenticated: RequestHandler = (req: any, res, next) => {
 };
 
 export const isAdmin: RequestHandler = async (req: any, res, next) => {
-  if (!req.session?.userId) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+  try {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  const user = await storage.getUser(req.session.userId);
-  if (!user || user.isAdmin !== true) {
-    return res.status(403).json({ message: "Forbidden - Admin access required" });
-  }
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (user.isAdmin !== true) {
+      return res.status(403).json({ message: "Forbidden - Admin access required" });
+    }
 
-  return next();
+    return next();
+  } catch (error) {
+    console.error("isAdmin middleware error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
