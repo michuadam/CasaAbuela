@@ -5,6 +5,7 @@ import { insertProductSchema, insertCartItemSchema, insertNewsletterSubscriberSc
 import { z } from "zod";
 import { getUncachableStripeClient } from "./stripeClient";
 import { setupAuth, isAuthenticated, isAdmin } from "./auth";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -483,6 +484,55 @@ export async function registerRoutes(
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete product image" });
+    }
+  });
+
+  // Register Object Storage routes for file uploads
+  registerObjectStorageRoutes(app);
+
+  // Site Settings API (public read, admin write)
+  app.get("/api/site-settings", async (req, res) => {
+    try {
+      const settings = await storage.getAllSiteSettings();
+      const settingsMap: Record<string, string> = {};
+      settings.forEach(s => { settingsMap[s.key] = s.value; });
+      res.json(settingsMap);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch site settings" });
+    }
+  });
+
+  app.get("/api/site-settings/:key", async (req, res) => {
+    try {
+      const setting = await storage.getSiteSetting(req.params.key);
+      if (!setting) {
+        return res.status(404).json({ error: "Setting not found" });
+      }
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch site setting" });
+    }
+  });
+
+  app.put("/api/admin/site-settings/:key", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { value } = req.body;
+      if (typeof value !== "string") {
+        return res.status(400).json({ error: "Value must be a string" });
+      }
+      const setting = await storage.setSiteSetting(req.params.key, value);
+      res.json(setting);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update site setting" });
+    }
+  });
+
+  app.delete("/api/admin/site-settings/:key", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      await storage.deleteSiteSetting(req.params.key);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete site setting" });
     }
   });
 

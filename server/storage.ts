@@ -12,12 +12,15 @@ import {
   type InsertUser,
   type ProductImage,
   type InsertProductImage,
+  type SiteSetting,
+  type InsertSiteSetting,
   products,
   productImages,
   cartItems,
   newsletterSubscribers,
   orders,
-  users
+  users,
+  siteSettings
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and } from "drizzle-orm";
@@ -227,6 +230,37 @@ export class DbStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Site Settings
+  async getSiteSetting(key: string): Promise<SiteSetting | undefined> {
+    const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
+    return setting;
+  }
+
+  async getAllSiteSettings(): Promise<SiteSetting[]> {
+    return db.select().from(siteSettings);
+  }
+
+  async setSiteSetting(key: string, value: string): Promise<SiteSetting> {
+    const existing = await this.getSiteSetting(key);
+    if (existing) {
+      const [updated] = await db
+        .update(siteSettings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(siteSettings.key, key))
+        .returning();
+      return updated;
+    }
+    const [created] = await db
+      .insert(siteSettings)
+      .values({ key, value })
+      .returning();
+    return created;
+  }
+
+  async deleteSiteSetting(key: string): Promise<void> {
+    await db.delete(siteSettings).where(eq(siteSettings.key, key));
   }
 }
 
