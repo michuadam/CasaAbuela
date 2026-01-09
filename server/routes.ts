@@ -169,15 +169,25 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/cart", async (req, res) => {
+  app.post("/api/cart", async (req: any, res) => {
     try {
       const sessionId = req.session.id;
+      // Mark session as initialized so it gets saved
+      req.session.cartActive = true;
+      
       const itemData = insertCartItemSchema.parse({
         ...req.body,
         sessionId
       });
       const item = await storage.addToCart(itemData);
-      res.json(item);
+      
+      // Ensure session is saved before responding
+      req.session.save((err: any) => {
+        if (err) {
+          console.error("Session save error:", err);
+        }
+        res.json(item);
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
