@@ -5,7 +5,9 @@ import { useCart } from "@/hooks/use-cart";
 const FREE_SHIPPING_THRESHOLD = 150;
 
 export function FreeShippingBar() {
-  const { cartTotal } = useCart();
+  const { cartTotal, cartCount } = useCart();
+  
+  if (cartCount === 0) return null;
   
   const remaining = FREE_SHIPPING_THRESHOLD - cartTotal;
   const hasFreeshipping = remaining <= 0;
@@ -37,7 +39,7 @@ export function FreeShippingBar() {
             <>
               <Package className="h-4 w-4" />
               <span>
-                📦 Brakuje Ci tylko <strong>{remaining.toFixed(2)} zł</strong> do darmowej dostawy
+                Brakuje Ci tylko <strong>{remaining.toFixed(2)} zł</strong> do darmowej dostawy
               </span>
             </>
           )}
