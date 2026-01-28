@@ -14,13 +14,19 @@ import {
   type InsertProductImage,
   type SiteSetting,
   type InsertSiteSetting,
+  type StripeEvent,
+  type InsertStripeEvent,
+  type OrderItem,
+  type InsertOrderItem,
   products,
   productImages,
   cartItems,
   newsletterSubscribers,
   orders,
   users,
-  siteSettings
+  siteSettings,
+  stripeEvents,
+  orderItems
 } from "@shared/schema";
 import { db } from "../db/index";
 import { eq, and } from "drizzle-orm";
@@ -261,6 +267,30 @@ export class DbStorage implements IStorage {
 
   async deleteSiteSetting(key: string): Promise<void> {
     await db.delete(siteSettings).where(eq(siteSettings.key, key));
+  }
+
+  // Stripe Events (idempotency)
+  async recordStripeEvent(eventId: string, type: string): Promise<boolean> {
+    try {
+      await db.insert(stripeEvents).values({ eventId, type });
+      return true;
+    } catch (error: any) {
+      if (error.code === '23505') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  // Order Items
+  async createOrderItems(items: InsertOrderItem[]): Promise<OrderItem[]> {
+    if (items.length === 0) return [];
+    const result = await db.insert(orderItems).values(items).returning();
+    return result;
+  }
+
+  async getOrderItems(orderId: string): Promise<OrderItem[]> {
+    return db.select().from(orderItems).where(eq(orderItems.orderId, orderId));
   }
 }
 

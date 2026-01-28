@@ -1,4 +1,5 @@
-import { getStripeSync } from './stripeClient';
+import { getStripeSync, getUncachableStripeClient } from './stripeClient';
+import { storage } from './storage';
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string, uuid: string): Promise<void> {
@@ -12,6 +13,49 @@ export class WebhookHandlers {
     }
 
     const sync = await getStripeSync();
+    const stripe = await getUncachableStripeClient();
+    
+    const webhookSecret = await sync.getWebhookSecret(uuid);
+    const event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+
+    const isNew = await storage.recordStripeEvent(event.id, event.type);
+    if (!isNew) {
+      console.log(`Stripe event ${event.id} already processed, skipping`);
+      return;
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as any;
+      const order = await storage.getOrderByStripeSession(session.id);
+      
+      if (order && order.status !== 'paid') {
+        await storage.updateOrderStatus(
+          order.id, 
+          'paid', 
+          session.payment_intent as string
+        );
+        await storage.clearCart(order.sessionId);
+        console.log(`Order ${order.id} marked as paid`);
+      }
+    }
+
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object as any;
+      const checkoutSessions = await stripe.checkout.sessions.list({
+        payment_intent: paymentIntent.id,
+        limit: 1
+      });
+      
+      if (checkoutSessions.data.length > 0) {
+        const session = checkoutSessions.data[0];
+        const order = await storage.getOrderByStripeSession(session.id);
+        if (order) {
+          await storage.updateOrderStatus(order.id, 'failed');
+          console.log(`Order ${order.id} marked as failed`);
+        }
+      }
+    }
+
     await sync.processWebhook(payload, signature, uuid);
   }
 }

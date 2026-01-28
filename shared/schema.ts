@@ -157,3 +157,36 @@ export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({
 
 export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
 export type SiteSetting = typeof siteSettings.$inferSelect;
+
+// Stripe events for idempotency
+export const stripeEvents = pgTable("stripe_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: text("event_id").unique().notNull(),
+  type: text("type").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertStripeEventSchema = createInsertSchema(stripeEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertStripeEvent = z.infer<typeof insertStripeEventSchema>;
+export type StripeEvent = typeof stripeEvents.$inferSelect;
+
+// Order items with price snapshots
+export const orderItems = pgTable("order_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: varchar("order_id").notNull().references(() => orders.id),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  titleSnapshot: text("title_snapshot").notNull(),
+  unitPriceSnapshot: decimal("unit_price_snapshot", { precision: 10, scale: 2 }).notNull(),
+  quantity: integer("quantity").notNull(),
+});
+
+export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
+  id: true,
+});
+
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderItem = typeof orderItems.$inferSelect;

@@ -302,6 +302,16 @@ export async function registerRoutes(
         })))
       });
 
+      await storage.createOrderItems(
+        cartItems.map(item => ({
+          orderId: order.id,
+          productId: item.productId,
+          titleSnapshot: `${item.product.title} ${item.product.weight}`,
+          unitPriceSnapshot: item.product.price,
+          quantity: item.quantity
+        }))
+      );
+
       const stripe = await getUncachableStripeClient();
       
       const lineItems = cartItems.map(item => ({
