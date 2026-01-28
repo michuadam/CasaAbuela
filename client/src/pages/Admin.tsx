@@ -111,6 +111,7 @@ function OrdersTab() {
               <Select 
                 value={selectedOrder.status} 
                 onValueChange={(status) => updateStatus.mutate({ id: selectedOrder.id, status })}
+                disabled={selectedOrder.status === "paid"}
               >
                 <SelectTrigger className="w-48" data-testid="select-order-status">
                   <SelectValue />
@@ -118,7 +119,6 @@ function OrdersTab() {
                 <SelectContent>
                   <SelectItem value="pending">Oczekujące</SelectItem>
                   <SelectItem value="awaiting_payment">Oczekuje na płatność</SelectItem>
-                  <SelectItem value="paid">Opłacone</SelectItem>
                   <SelectItem value="shipped">Wysłane</SelectItem>
                   <SelectItem value="cancelled">Anulowane</SelectItem>
                 </SelectContent>

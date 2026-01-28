@@ -29,7 +29,7 @@ import {
   orderItems
 } from "@shared/schema";
 import { db } from "../db/index";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql, gte } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export interface IStorage {
@@ -198,8 +198,24 @@ export class DbStorage implements IStorage {
     return db.select().from(orders).where(eq(orders.sessionId, sessionId));
   }
 
-  async getAllOrders(): Promise<Order[]> {
-    return db.select().from(orders).orderBy(desc(orders.createdAt));
+  async getAllOrders(limit: number = 100, offset: number = 0): Promise<Order[]> {
+    return db.select().from(orders).orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
+  }
+
+  async decrementProductStock(productId: string, quantity: number): Promise<boolean> {
+    const result = await db
+      .update(products)
+      .set({ inStock: sql`${products.inStock} - ${quantity}` })
+      .where(and(eq(products.id, productId), gte(products.inStock, quantity)))
+      .returning();
+    return result.length > 0;
+  }
+
+  async batchDecrementStockForOrder(orderId: string): Promise<void> {
+    const items = await this.getOrderItems(orderId);
+    for (const item of items) {
+      await this.decrementProductStock(item.productId, item.quantity);
+    }
   }
 
   // Users

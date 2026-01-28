@@ -1,5 +1,9 @@
 import type { Express } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { isAuthenticated, isAdmin } from "../../auth";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /**
  * Register object storage routes for file uploads.
@@ -18,6 +22,7 @@ export function registerObjectStorageRoutes(app: Express): void {
 
   /**
    * Request a presigned URL for file upload.
+   * Protected: requires admin authentication.
    *
    * Request body (JSON):
    * {
@@ -35,13 +40,27 @@ export function registerObjectStorageRoutes(app: Express): void {
    * IMPORTANT: The client should NOT send the file to this endpoint.
    * Send JSON metadata only, then upload the file directly to uploadURL.
    */
-  app.post("/api/uploads/request-url", async (req, res) => {
+  app.post("/api/uploads/request-url", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { name, size, contentType } = req.body;
 
       if (!name) {
         return res.status(400).json({
           error: "Missing required field: name",
+        });
+      }
+
+      // Validate content type
+      if (contentType && !ALLOWED_CONTENT_TYPES.includes(contentType)) {
+        return res.status(400).json({
+          error: `Invalid content type. Allowed: ${ALLOWED_CONTENT_TYPES.join(", ")}`,
+        });
+      }
+
+      // Validate file size
+      if (size && size > MAX_FILE_SIZE) {
+        return res.status(400).json({
+          error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
         });
       }
 

@@ -35,7 +35,8 @@ export class WebhookHandlers {
           session.payment_intent as string
         );
         await storage.clearCart(order.sessionId);
-        console.log(`Order ${order.id} marked as paid`);
+        await storage.batchDecrementStockForOrder(order.id);
+        console.log(`Order ${order.id} marked as paid, stock decremented`);
       }
     }
 

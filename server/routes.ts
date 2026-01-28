@@ -65,14 +65,14 @@ export async function registerRoutes(
         return res.status(401).json({ message: "Nieprawidłowy email lub hasło" });
       }
 
-      // Auto-grant admin for owner email
-      const ADMIN_EMAIL = "adamski.michal.2@gmail.com";
-      if (user.email === ADMIN_EMAIL && user.isAdmin !== true) {
+      // Auto-grant admin for owner email (from ENV or default)
+      const adminEmails = (process.env.ADMIN_EMAILS || "adamski.michal.2@gmail.com").split(",").map(e => e.trim().toLowerCase());
+      if (adminEmails.includes(user.email.toLowerCase()) && user.isAdmin !== true) {
         try {
           const updatedUser = await storage.setUserAdmin(user.id, true);
           if (updatedUser) {
             user = updatedUser;
-            console.log(`Auto-granted admin rights to ${ADMIN_EMAIL}`);
+            console.log(`Auto-granted admin rights to ${user.email}`);
           }
         } catch (e) {
           console.error("Failed to auto-grant admin:", e);
@@ -558,10 +558,12 @@ export async function registerRoutes(
 
   // ============ ADMIN ORDERS API ============
 
-  // Admin: Get all orders
+  // Admin: Get all orders (with pagination)
   app.get("/api/admin/orders", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const orders = await storage.getAllOrders();
+      const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 100, 1), 500);
+      const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+      const orders = await storage.getAllOrders(limit, offset);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch orders" });
@@ -597,13 +599,14 @@ export async function registerRoutes(
   });
 
   // Admin: Update order status
+  // NOTE: "paid" status should only be set via Stripe webhook, not manually
   app.patch("/api/admin/orders/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const { status } = req.body;
-      const validStatuses = ["pending", "awaiting_payment", "paid", "shipped", "cancelled", "failed"];
+      const validStatuses = ["pending", "awaiting_payment", "shipped", "cancelled"];
       
       if (!status || !validStatuses.includes(status)) {
-        return res.status(400).json({ error: "Invalid status" });
+        return res.status(400).json({ error: "Invalid status. Note: 'paid' can only be set via payment webhook" });
       }
       
       const order = await storage.updateOrderStatus(req.params.id, status);
