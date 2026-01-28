@@ -12,8 +12,7 @@ import { toast } from "sonner";
 
 declare global {
   interface Window {
-    easyPackAsyncInit?: () => void;
-    easyPack?: any;
+    handleInpostPoint?: (point: any) => void;
   }
 }
 
@@ -77,34 +76,28 @@ export default function Checkout() {
   };
 
   const openGeowidget = () => {
-    if (window.easyPack) {
-      window.easyPack.modalMap((point: any) => {
-        setSelectedPoint(point);
-      }, { width: 500, height: 600 });
-    } else {
-      const modal = document.createElement('div');
-      modal.id = 'inpost-geowidget-modal';
-      modal.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-          <div style="background: white; width: 90%; max-width: 800px; height: 80%; border-radius: 8px; overflow: hidden; position: relative;">
-            <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: #333; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
-            <inpost-geowidget 
-              onpointselect="window.handleInpostPoint" 
-              token="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVzROZW9TeXk0OHpCOHg4emdZX2t5dFNiWHY3blZ0eFVGVFpzWV9TUFA4In0.eyJleHAiOjIwODEyODYzNDgsImlhdCI6MTc2NTkyNjM0OCwianRpIjoiMzUxNTg0MGItZGU0ZS00NTQxLWFlNzEtYzJhYmE3NDkzMGEzIiwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWxvZ2luLmlucG9zdC5wbC9hdXRoL3JlYWxtcy9leHRlcm5hbCIsInN1YiI6ImY6N2ZiZjQxYmEtYTEzZC00MGQzLTk1ZjYtOThhMmIxYmFlNjdiOnBmdmlGR3B5NWxWdF9kOXZtUEFKcE5OQVpWTFV4VUJ0SFlHMk5nUHNWQnciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzaGlweCIsInNlc3Npb25fc3RhdGUiOiIyNWVlZjFkMS01NzczLTQzNDItOGFjNS1iZGM1NjQzZjFlNjYiLCJzY29wZSI6Im9wZW5pZCBhcGk6YXBpcG9pbnRzIiwic2lkIjoiMjVlZWYxZDEtNTc3My00MzQyLThhYzUtYmRjNTY0M2YxZTY2IiwiYWxsb3dlZF9yZWZlcnJlcnMiOiJhYnVlbGEuY2FzYSIsInV1aWQiOiI3YjM5ODYzNi1kOTJiLTQ3YTUtYmU1OC00MzRlMzZlZDFkZWQifQ.iISdU9h8mHn0n-D0YWB417zaAIHh6qhUOhSvlkg-_xqpPBUFEoGB9dK23KZzc1u5CU3yvQ1gp3bzqDqgYstxcFNTJ9YS9WLCNTfyZtfXkpoWbyUQHme9VCjFSpSD6iCOPeA41dpzoczfXLy1Qhw8HpY6eBvM485-04wbb66aE-ofA-9lATIhx18vA6wd8abIKHYk1B0B-JfvsyWJpyhNK6GYfZxy7KoUsRfG4n_aU63bSxYfqvM1I-_3dvUzRUOKVNthOLDEtaaGgzAFadfS37ZW5mWk5KOQvTc8EeWKj--tmsvMb5xvfaOFK5N7kMU_LvnELCvPXf5dLebcvmO4qQ"
-              country="PL"
-              language="pl"
-              config="parcelcollect"
-            ></inpost-geowidget>
-          </div>
+    const modal = document.createElement('div');
+    modal.id = 'inpost-geowidget-modal';
+    modal.innerHTML = `
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 800px; height: 80%; border-radius: 8px; overflow: hidden; position: relative;">
+          <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: #333; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
+          <inpost-geowidget 
+            onpoint="handleInpostPoint" 
+            token="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVzROZW9TeXk0OHpCOHg4emdZX2t5dFNiWHY3blZ0eFVGVFpzWV9TUFA4In0.eyJleHAiOjIwODEyODYzNDgsImlhdCI6MTc2NTkyNjM0OCwianRpIjoiMzUxNTg0MGItZGU0ZS00NTQxLWFlNzEtYzJhYmE3NDkzMGEzIiwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWxvZ2luLmlucG9zdC5wbC9hdXRoL3JlYWxtcy9leHRlcm5hbCIsInN1YiI6ImY6N2ZiZjQxYmEtYTEzZC00MGQzLTk1ZjYtOThhMmIxYmFlNjdiOnBmdmlGR3B5NWxWdF9kOXZtUEFKcE5OQVpWTFV4VUJ0SFlHMk5nUHNWQnciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzaGlweCIsInNlc3Npb25fc3RhdGUiOiIyNWVlZjFkMS01NzczLTQzNDItOGFjNS1iZGM1NjQzZjFlNjYiLCJzY29wZSI6Im9wZW5pZCBhcGk6YXBpcG9pbnRzIiwic2lkIjoiMjVlZWYxZDEtNTc3My00MzQyLThhYzUtYmRjNTY0M2YxZTY2IiwiYWxsb3dlZF9yZWZlcnJlcnMiOiJhYnVlbGEuY2FzYSIsInV1aWQiOiI3YjM5ODYzNi1kOTJiLTQ3YTUtYmU1OC00MzRlMzZlZDFkZWQifQ.iISdU9h8mHn0n-D0YWB417zaAIHh6qhUOhSvlkg-_xqpPBUFEoGB9dK23KZzc1u5CU3yvQ1gp3bzqDqgYstxcFNTJ9YS9WLCNTfyZtfXkpoWbyUQHme9VCjFSpSD6iCOPeA41dpzoczfXLy1Qhw8HpY6eBvM485-04wbb66aE-ofA-9lATIhx18vA6wd8abIKHYk1B0B-JfvsyWJpyhNK6GYfZxy7KoUsRfG4n_aU63bSxYfqvM1I-_3dvUzRUOKVNthOLDEtaaGgzAFadfS37ZW5mWk5KOQvTc8EeWKj--tmsvMb5xvfaOFK5N7kMU_LvnELCvPXf5dLebcvmO4qQ"
+            country="PL"
+            language="pl"
+            config="parcelCollect"
+          ></inpost-geowidget>
         </div>
-      `;
-      document.body.appendChild(modal);
-      
-      (window as any).handleInpostPoint = (point: any) => {
-        setSelectedPoint(point.detail);
-        modal.remove();
-      };
-    }
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    (window as any).handleInpostPoint = (point: any) => {
+      setSelectedPoint(point);
+      modal.remove();
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
