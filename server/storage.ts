@@ -29,7 +29,7 @@ import {
   orderItems
 } from "@shared/schema";
 import { db } from "../db/index";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export interface IStorage {
@@ -196,6 +196,10 @@ export class DbStorage implements IStorage {
 
   async getOrdersBySession(sessionId: string): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.sessionId, sessionId));
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return db.select().from(orders).orderBy(desc(orders.createdAt));
   }
 
   // Users

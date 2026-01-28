@@ -556,5 +556,66 @@ export async function registerRoutes(
     }
   });
 
+  // ============ ADMIN ORDERS API ============
+
+  // Admin: Get all orders
+  app.get("/api/admin/orders", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  // Admin: Get order details
+  app.get("/api/admin/orders/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const order = await storage.getOrder(req.params.id);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      
+      const orderItems = await storage.getOrderItems(req.params.id);
+      
+      let items = orderItems.length > 0 
+        ? orderItems.map(item => ({
+            title: item.titleSnapshot,
+            unitPrice: item.unitPriceSnapshot,
+            quantity: item.quantity
+          }))
+        : JSON.parse(order.items || "[]").map((item: any) => ({
+            title: `${item.title} ${item.weight}`,
+            unitPrice: item.price,
+            quantity: item.quantity
+          }));
+      
+      res.json({ ...order, items });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch order" });
+    }
+  });
+
+  // Admin: Update order status
+  app.patch("/api/admin/orders/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { status } = req.body;
+      const validStatuses = ["pending", "awaiting_payment", "paid", "shipped", "cancelled", "failed"];
+      
+      if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      const order = await storage.updateOrderStatus(req.params.id, status);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update order status" });
+    }
+  });
+
   return httpServer;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Save, X, Upload, Image, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, X, Upload, Image, Settings, Package, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,237 @@ import { toast } from "sonner";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/hooks/use-auth";
 import { useUpload } from "@/hooks/use-upload";
-import type { Product } from "@shared/schema";
+import type { Product, Order } from "@shared/schema";
+
+interface OrderItem {
+  title: string;
+  unitPrice: string;
+  quantity: number;
+}
+
+interface OrderWithItems extends Omit<Order, 'items'> {
+  items: OrderItem[];
+}
+
+const statusLabels: Record<string, string> = {
+  pending: "Oczekujące",
+  awaiting_payment: "Oczekuje na płatność",
+  paid: "Opłacone",
+  shipped: "Wysłane",
+  cancelled: "Anulowane",
+  failed: "Nieudane"
+};
+
+const statusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  awaiting_payment: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+  shipped: "bg-purple-100 text-purple-800",
+  cancelled: "bg-gray-100 text-gray-800",
+  failed: "bg-red-100 text-red-800"
+};
+
+function OrdersTab() {
+  const queryClient = useQueryClient();
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+  const { data: orders = [], isLoading: loadingOrders } = useQuery<Order[]>({
+    queryKey: ["admin-orders"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/orders");
+      if (!res.ok) throw new Error("Failed to fetch orders");
+      return res.json();
+    },
+  });
+
+  const { data: selectedOrder, isLoading: loadingOrder } = useQuery<OrderWithItems>({
+    queryKey: ["admin-order", selectedOrderId],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/orders/${selectedOrderId}`);
+      if (!res.ok) throw new Error("Failed to fetch order");
+      return res.json();
+    },
+    enabled: !!selectedOrderId,
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update order");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-order", selectedOrderId] });
+      toast.success("Status zamówienia zaktualizowany!");
+    },
+    onError: () => {
+      toast.error("Nie udało się zaktualizować statusu");
+    },
+  });
+
+  if (selectedOrderId && selectedOrder) {
+    return (
+      <div className="space-y-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => setSelectedOrderId(null)}
+          className="mb-4"
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" /> Wróć do listy
+        </Button>
+
+        {loadingOrder ? (
+          <p className="text-muted-foreground">Ładowanie zamówienia...</p>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="font-serif text-xl text-primary">Zamówienie #{selectedOrder.id.slice(0, 8)}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(selectedOrder.createdAt!).toLocaleString("pl-PL")}
+                </p>
+              </div>
+              <Select 
+                value={selectedOrder.status} 
+                onValueChange={(status) => updateStatus.mutate({ id: selectedOrder.id, status })}
+              >
+                <SelectTrigger className="w-48" data-testid="select-order-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Oczekujące</SelectItem>
+                  <SelectItem value="awaiting_payment">Oczekuje na płatność</SelectItem>
+                  <SelectItem value="paid">Opłacone</SelectItem>
+                  <SelectItem value="shipped">Wysłane</SelectItem>
+                  <SelectItem value="cancelled">Anulowane</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium mb-2">Dane klienta</h3>
+                <div className="text-sm space-y-1">
+                  <p><span className="text-muted-foreground">Imię:</span> {selectedOrder.customerName}</p>
+                  <p><span className="text-muted-foreground">Email:</span> {selectedOrder.customerEmail}</p>
+                  <p><span className="text-muted-foreground">Telefon:</span> {selectedOrder.customerPhone}</p>
+                  {selectedOrder.customerType === "company" && (
+                    <>
+                      <p><span className="text-muted-foreground">Firma:</span> {selectedOrder.companyName}</p>
+                      <p><span className="text-muted-foreground">NIP:</span> {selectedOrder.companyNip}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium mb-2">Dostawa InPost</h3>
+                <div className="text-sm space-y-1">
+                  <p><span className="text-muted-foreground">Paczkomat:</span> {selectedOrder.inpostPointName || "-"}</p>
+                  <p><span className="text-muted-foreground">Adres:</span> {selectedOrder.inpostPointAddress || "-"}</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-medium mb-2">Produkty</h3>
+              <div className="border rounded">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="text-left px-4 py-2">Produkt</th>
+                      <th className="text-right px-4 py-2">Cena</th>
+                      <th className="text-right px-4 py-2">Ilość</th>
+                      <th className="text-right px-4 py-2">Suma</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map((item, idx) => (
+                      <tr key={idx} className="border-b last:border-0">
+                        <td className="px-4 py-2">{item.title}</td>
+                        <td className="px-4 py-2 text-right">{parseFloat(item.unitPrice).toFixed(2)} zł</td>
+                        <td className="px-4 py-2 text-right">{item.quantity}</td>
+                        <td className="px-4 py-2 text-right font-medium">
+                          {(parseFloat(item.unitPrice) * item.quantity).toFixed(2)} zł
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50">
+                    <tr>
+                      <td colSpan={3} className="px-4 py-2 text-right font-medium">Razem:</td>
+                      <td className="px-4 py-2 text-right font-bold text-primary">
+                        {parseFloat(selectedOrder.totalAmount).toFixed(2)} zł
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {loadingOrders ? (
+        <p className="text-muted-foreground">Ładowanie zamówień...</p>
+      ) : orders.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+          <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Brak zamówień</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="overflow-x-auto">
+            <table className="w-full" data-testid="table-orders">
+              <thead className="border-b bg-gray-50">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-sm text-gray-600">Data</th>
+                  <th className="text-left px-4 py-3 font-medium text-sm text-gray-600">Klient</th>
+                  <th className="text-left px-4 py-3 font-medium text-sm text-gray-600">Email</th>
+                  <th className="text-left px-4 py-3 font-medium text-sm text-gray-600">Kwota</th>
+                  <th className="text-left px-4 py-3 font-medium text-sm text-gray-600">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr 
+                    key={order.id} 
+                    className="border-b last:border-0 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedOrderId(order.id)}
+                    data-testid={`row-order-${order.id}`}
+                  >
+                    <td className="px-4 py-3 text-sm">
+                      {new Date(order.createdAt!).toLocaleDateString("pl-PL")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-primary">{order.customerName}</div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{order.customerEmail}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{parseFloat(order.totalAmount).toFixed(2)} zł</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex px-2 py-1 text-xs rounded ${statusColors[order.status] || "bg-gray-100"}`}>
+                        {statusLabels[order.status] || order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function HomepageSettings() {
   const queryClient = useQueryClient();
@@ -385,6 +615,9 @@ export default function Admin() {
               <TabsTrigger value="products" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 <Image className="h-4 w-4 mr-2" /> Produkty
               </TabsTrigger>
+              <TabsTrigger value="orders" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <Package className="h-4 w-4 mr-2" /> Zamówienia
+              </TabsTrigger>
               <TabsTrigger value="homepage" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 <Settings className="h-4 w-4 mr-2" /> Strona główna
               </TabsTrigger>
@@ -458,6 +691,10 @@ export default function Admin() {
               </div>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="orders" className="space-y-4">
+              <OrdersTab />
             </TabsContent>
 
             <TabsContent value="homepage" className="space-y-6">
