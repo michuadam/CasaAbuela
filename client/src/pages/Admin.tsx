@@ -175,6 +175,17 @@ function OrdersTab() {
                       Utwórz przesyłkę InPost (sandbox)
                     </Button>
                   ) : null}
+                  
+                  {selectedOrder.status !== "shipped" && selectedOrder.inpostShipmentId && (
+                    <Button
+                      size="sm"
+                      className="mt-3 bg-green-600 hover:bg-green-700"
+                      onClick={() => updateStatus.mutate({ id: selectedOrder.id, status: "shipped" })}
+                      data-testid="button-mark-shipped"
+                    >
+                      Oznacz jako wysłane
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
