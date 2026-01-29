@@ -619,6 +619,19 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Order not found" });
       }
       
+      if (status === "shipped") {
+        const { sendShippingEmail } = await import('./mailer');
+        const orderItems = await storage.getOrderItems(order.id);
+        const items = orderItems.map(item => ({
+          title: item.titleSnapshot,
+          unitPrice: item.unitPriceSnapshot,
+          quantity: item.quantity
+        }));
+        sendShippingEmail(order as any, items).catch(err => 
+          console.error('Shipping email failed:', err)
+        );
+      }
+      
       res.json(order);
     } catch (error) {
       res.status(500).json({ error: "Failed to update order status" });

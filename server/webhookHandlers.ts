@@ -1,5 +1,6 @@
 import { getStripeSync, getUncachableStripeClient } from './stripeClient';
 import { storage } from './storage';
+import { sendOrderConfirmationEmail } from './mailer';
 
 export class WebhookHandlers {
   static async processWebhook(payload: Buffer, signature: string, uuid: string): Promise<void> {
@@ -37,6 +38,16 @@ export class WebhookHandlers {
         await storage.clearCart(order.sessionId);
         await storage.batchDecrementStockForOrder(order.id);
         console.log(`Order ${order.id} marked as paid, stock decremented`);
+        
+        const orderItems = await storage.getOrderItems(order.id);
+        const items = orderItems.map(item => ({
+          title: item.titleSnapshot,
+          unitPrice: item.unitPriceSnapshot,
+          quantity: item.quantity
+        }));
+        sendOrderConfirmationEmail(order as any, items).catch(err => 
+          console.error('Email send failed:', err)
+        );
       }
     }
 
