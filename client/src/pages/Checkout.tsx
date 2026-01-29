@@ -123,17 +123,17 @@ export default function Checkout() {
     setIsLoading(true);
     
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          customerType,
-          inpostPointId: selectedPoint.name,
-          inpostPointName: selectedPoint.address?.line1 || selectedPoint.name,
-          inpostPointAddress: `${selectedPoint.address?.line1 || ''}, ${selectedPoint.address?.line2 || ''}`,
-        }),
-      });
+  const response = await fetch("/api/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...formData,
+      customerType,
+      inpostPointId: (selectedPoint.name || "").replace(/^PL_/, ""),
+      inpostPointName: selectedPoint.address?.line1 || selectedPoint.name,
+      inpostPointAddress: `${selectedPoint.address?.line1 || ""}, ${selectedPoint.address?.line2 || ""}`,
+    }),
+  });
 
       const data = await response.json();
       
