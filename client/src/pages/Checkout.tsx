@@ -95,9 +95,11 @@ export default function Checkout() {
     document.body.appendChild(modal);
     
     (window as any).handleInpostPoint = (point: any) => {
+      console.log("INPOST POINT:", point);
       setSelectedPoint(point);
       modal.remove();
     };
+
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
