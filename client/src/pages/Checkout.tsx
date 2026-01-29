@@ -395,7 +395,7 @@ export default function Checkout() {
                 className="w-full h-14 bg-primary hover:bg-primary/90 text-white uppercase tracking-widest"
                 data-testid="button-pay"
               >
-                {isLoading ? "Przetwarzanie..." : `Zapłać ${(cartTotal + 14.99).toFixed(2)} PLN`}
+                {isLoading ? "Przetwarzanie..." : `Zapłać ${(cartTotal + (cartTotal >= 160 ? 0 : 14.99)).toFixed(2)} PLN`}
               </Button>
             </form>
           </div>
@@ -431,11 +431,11 @@ export default function Checkout() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Dostawa (InPost)</span>
-                <span className="text-primary">14.99 PLN</span>
+                <span className="text-primary">{cartTotal >= 160 ? "Gratis!" : "14.99 PLN"}</span>
               </div>
               <div className="flex justify-between text-lg font-medium pt-3 border-t border-stone-200">
                 <span className="text-primary">Razem</span>
-                <span className="text-primary">{(cartTotal + 14.99).toFixed(2)} PLN</span>
+                <span className="text-primary">{(cartTotal + (cartTotal >= 160 ? 0 : 14.99)).toFixed(2)} PLN</span>
               </div>
             </div>
           </div>

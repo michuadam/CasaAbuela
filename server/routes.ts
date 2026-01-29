@@ -326,6 +326,11 @@ export async function registerRoutes(
         quantity: item.quantity,
       }));
 
+      // Free shipping threshold: 160 PLN
+      const FREE_SHIPPING_THRESHOLD = 160;
+      const cartTotalPLN = cartItems.reduce((sum, item) => sum + parseFloat(item.product.price) * item.quantity, 0);
+      const shippingAmount = cartTotalPLN >= FREE_SHIPPING_THRESHOLD ? 0 : 1499;
+
       const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
       
       const checkoutSession = await stripe.checkout.sessions.create({
@@ -343,10 +348,10 @@ export async function registerRoutes(
             shipping_rate_data: {
               type: 'fixed_amount',
               fixed_amount: {
-                amount: 1499,
+                amount: shippingAmount,
                 currency: 'pln',
               },
-              display_name: 'InPost Paczkomat',
+              display_name: shippingAmount === 0 ? 'Darmowa dostawa InPost' : 'InPost Paczkomat',
               delivery_estimate: {
                 minimum: {
                   unit: 'business_day',
