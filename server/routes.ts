@@ -639,19 +639,19 @@ export async function registerRoutes(
       
       const shipmentPayload = {
         receiver: {
-          name: order.customerName,
           email: order.customerEmail,
           phone: order.customerPhone,
         },
-        parcels: [{
-          dimensions: { length: 200, width: 200, height: 100, unit: "mm" },
-          weight: { amount: 0.5, unit: "kg" },
-        }],
+        parcels: { template: "small" },
         custom_attributes: {
+          sending_method: "dispatch_order",
           target_point: order.inpostPointId,
         },
         service: "inpost_locker_standard",
+        reference: order.id,
       };
+      
+      console.log("InPost ShipX request:", JSON.stringify(shipmentPayload, null, 2));
       
       const response = await fetch(
         `https://sandbox-api-shipx-pl.easypack24.net/v1/organizations/${INPOST_ORG_ID}/shipments`,
@@ -666,9 +666,9 @@ export async function registerRoutes(
       );
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("InPost ShipX error:", errorText);
-        return res.status(500).json({ error: "Failed to create InPost shipment", details: errorText });
+        const errorBody = await response.text();
+        console.error(`InPost ShipX error - Status: ${response.status}, Body: ${errorBody}`);
+        return res.status(500).json({ error: "Failed to create InPost shipment", status: response.status, details: errorBody });
       }
       
       const shipmentData = await response.json();
