@@ -92,6 +92,8 @@ export const orders = pgTable("orders", {
   inpostPointId: text("inpost_point_id"),
   inpostPointName: text("inpost_point_name"),
   inpostPointAddress: text("inpost_point_address"),
+  inpostShipmentId: text("inpost_shipment_id"),
+  inpostTrackingNumber: text("inpost_tracking_number"),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   items: text("items").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

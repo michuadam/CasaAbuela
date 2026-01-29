@@ -614,6 +614,76 @@ export async function registerRoutes(
     }
   });
 
+  // Admin: Create InPost shipment (sandbox)
+  app.post("/api/admin/orders/:id/inpost/create", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const order = await storage.getOrder(req.params.id);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+      
+      if (!order.inpostPointId) {
+        return res.status(400).json({ error: "Order has no InPost point selected" });
+      }
+      
+      if (order.inpostShipmentId) {
+        return res.status(400).json({ error: "Shipment already created", inpostShipmentId: order.inpostShipmentId });
+      }
+      
+      const INPOST_SHIPX_TOKEN = process.env.INPOST_SHIPX_TOKEN;
+      const INPOST_ORG_ID = process.env.INPOST_ORG_ID;
+      
+      if (!INPOST_SHIPX_TOKEN || !INPOST_ORG_ID) {
+        return res.status(500).json({ error: "InPost ShipX not configured" });
+      }
+      
+      const shipmentPayload = {
+        receiver: {
+          name: order.customerName,
+          email: order.customerEmail,
+          phone: order.customerPhone,
+        },
+        parcels: [{
+          dimensions: { length: 200, width: 200, height: 100, unit: "mm" },
+          weight: { amount: 0.5, unit: "kg" },
+        }],
+        custom_attributes: {
+          target_point: order.inpostPointId,
+        },
+        service: "inpost_locker_standard",
+      };
+      
+      const response = await fetch(
+        `https://sandbox-api-shipx-pl.easypack24.net/v1/organizations/${INPOST_ORG_ID}/shipments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${INPOST_SHIPX_TOKEN}`,
+          },
+          body: JSON.stringify(shipmentPayload),
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("InPost ShipX error:", errorText);
+        return res.status(500).json({ error: "Failed to create InPost shipment", details: errorText });
+      }
+      
+      const shipmentData = await response.json();
+      const shipmentId = shipmentData.id?.toString();
+      const trackingNumber = shipmentData.tracking_number;
+      
+      await storage.updateOrderInpostShipment(order.id, shipmentId, trackingNumber);
+      
+      res.json({ inpostShipmentId: shipmentId, trackingNumber });
+    } catch (error: any) {
+      console.error("InPost shipment creation error:", error);
+      res.status(500).json({ error: "Failed to create InPost shipment" });
+    }
+  });
+
   // Admin: Update order status
   // NOTE: "paid" status should only be set via Stripe webhook, not manually
   app.patch("/api/admin/orders/:id", isAuthenticated, isAdmin, async (req, res) => {

@@ -146,6 +146,35 @@ function OrdersTab() {
                 <div className="text-sm space-y-1">
                   <p><span className="text-muted-foreground">Paczkomat:</span> {selectedOrder.inpostPointName || "-"}</p>
                   <p><span className="text-muted-foreground">Adres:</span> {selectedOrder.inpostPointAddress || "-"}</p>
+                  {selectedOrder.inpostShipmentId ? (
+                    <p><span className="text-muted-foreground">Przesyłka ID:</span> <span className="font-mono text-green-600">{selectedOrder.inpostShipmentId}</span></p>
+                  ) : selectedOrder.inpostPointId ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/admin/orders/${selectedOrder.id}/inpost/create`, {
+                            method: "POST",
+                            credentials: "include",
+                          });
+                          const data = await res.json();
+                          if (res.ok) {
+                            toast.success(`Utworzono przesyłkę: ${data.inpostShipmentId}`);
+                            queryClient.invalidateQueries({ queryKey: ["/api/admin/orders"] });
+                          } else {
+                            toast.error(data.error || "Błąd tworzenia przesyłki");
+                          }
+                        } catch (err) {
+                          toast.error("Błąd połączenia");
+                        }
+                      }}
+                      data-testid="button-create-inpost-shipment"
+                    >
+                      Utwórz przesyłkę InPost (sandbox)
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </div>

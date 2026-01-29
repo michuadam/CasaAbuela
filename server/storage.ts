@@ -194,6 +194,15 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
+  async updateOrderInpostShipment(id: string, shipmentId: string, trackingNumber?: string): Promise<Order | undefined> {
+    const updateData: any = { inpostShipmentId: shipmentId };
+    if (trackingNumber) {
+      updateData.inpostTrackingNumber = trackingNumber;
+    }
+    const result = await db.update(orders).set(updateData).where(eq(orders.id, id)).returning();
+    return result[0];
+  }
+
   async getOrdersBySession(sessionId: string): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.sessionId, sessionId));
   }
