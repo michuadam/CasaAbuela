@@ -388,6 +388,17 @@ export async function registerRoutes(
         if (order && order.status !== 'paid') {
           order = await storage.updateOrderStatus(order.id, "paid", stripeSession.payment_intent as string);
           await storage.clearCart(order!.sessionId);
+          
+          const { sendOrderConfirmationEmail } = await import('./mailer');
+          const orderItems = await storage.getOrderItems(order!.id);
+          const items = orderItems.map(item => ({
+            title: item.titleSnapshot,
+            unitPrice: item.unitPriceSnapshot,
+            quantity: item.quantity
+          }));
+          sendOrderConfirmationEmail(order as any, items).catch(err => 
+            console.error('Email send failed:', err)
+          );
         }
         res.json({ success: true, order });
       } else {
