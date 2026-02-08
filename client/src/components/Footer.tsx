@@ -1,6 +1,13 @@
+import type { MouseEvent } from "react";
 import { Facebook, Instagram, Twitter } from "lucide-react";
 
 export function Footer() {
+  const handleResetCookies = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    localStorage.removeItem("cookieConsent");
+    window.dispatchEvent(new Event("resetCookieConsent"));
+  };
+
   return (
     <footer className="bg-primary text-primary-foreground py-20 border-t border-white/10">
       <div className="container mx-auto px-4 md:px-6">
@@ -27,9 +34,9 @@ export function Footer() {
           <div>
             <h4 className="font-serif text-xl mb-6">Kontakt</h4>
             <ul className="space-y-4 font-light text-primary-foreground/80">
-              <li>hello@casaabuela.pl</li>
-              <li>+48 123 456 789</li>
-              <li>ul. Kawowa 12, Warszawa</li>
+              <li>kontakt@abuela.casa</li>
+              <li>+48 …</li>
+              <li>ul. Ryszarda Kaczorowskiego 16, Poznań</li>
             </ul>
             <div className="flex gap-4 mt-6">
               <a href="#" className="text-white/60 hover:text-white transition-colors"><Instagram size={20} /></a>
@@ -41,9 +48,19 @@ export function Footer() {
         
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-primary-foreground/40 font-light">
           <p>&copy; {new Date().getFullYear()} Casa Abuela. Wszelkie prawa zastrzeżone.</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white transition-colors">Polityka Prywatności</a>
-            <a href="#" className="hover:text-white transition-colors">Regulamin</a>
+          <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 md:mt-0">
+            <a href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Regulamin</a>
+            <a href="/privacy" className="hover:text-white transition-colors" data-testid="link-privacy">Polityka prywatności</a>
+            <a href="/returns" className="hover:text-white transition-colors" data-testid="link-returns">Zwroty</a>
+            <a href="/company" className="hover:text-white transition-colors" data-testid="link-company">Dane firmy</a>
+            <a
+              href="#"
+              onClick={handleResetCookies}
+              className="hover:text-white transition-colors"
+              data-testid="link-cookie-settings"
+            >
+              Ustawienia cookies
+            </a>
           </div>
         </div>
       </div>

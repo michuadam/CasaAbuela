@@ -1,0 +1,61 @@
+Dodaj minimalne strony prawne PL/EU i cookie banner. Bez refaktoru istniejących stron i bez nowych bibliotek. Użyj poniższych danych firmy i wstaw je w treściach.
+
+DANE FIRMY (wstaw w /company oraz odwołania w /terms i /privacy):
+- Nazwa: BlockchainDirect Michał Adamski
+- Adres: ul. Ryszarda Kaczorowskiego 16, 61-695 Poznań, Polska
+- NIP: 9721307756
+- REGON: 38590466000000
+- E-mail: [WSTAW PLACEHOLDER: kontakt@abuela.casa]
+- Telefon: [WSTAW PLACEHOLDER: +48 …]
+- Godziny obsługi: [WSTAW PLACEHOLDER: pn–pt 9:00–17:00]
+- Adres zwrotów: taki sam jak adres firmy (chyba że dodam inny później)
+
+1) Dodaj publiczne strony (content pages):
+- /company (Dane firmy / imprint)
+- /terms (Regulamin)
+- /privacy (Polityka prywatności)
+- /returns (Zwroty i reklamacje)
+
+Treść ma być GOTOWA (nie lorem ipsum), ale może zawierać placeholdery tam gdzie nie mam danych (email/telefon/godziny/termin realizacji/kraje dostawy).
+
+/company ma zawierać:
+- Dane sprzedawcy (pełne jak wyżej)
+- Kontakt i obsługa klienta (placeholder email/telefon/godziny)
+- (opcjonalnie) informacja o wpisie do rejestru: jeśli brak KRS, napisz "Nie dotyczy (działalność jednoosobowa)".
+
+/terms (Regulamin) – sekcje:
+- Postanowienia ogólne + dane sprzedawcy (link do /company)
+- Składanie zamówień
+- Ceny i płatności (Stripe)
+- Dostawa (InPost Paczkomaty; koszt dostawy placeholder 14,99 PLN; próg darmowej dostawy placeholder 160 PLN)
+- Odstąpienie od umowy (14 dni dla konsumenta)
+- Reklamacje
+- Dane osobowe i cookies (link do /privacy)
+- Postanowienia końcowe (data obowiązywania placeholder)
+
+/returns – sekcje:
+- Zwroty: 14 dni, jak zgłosić (email placeholder), gdzie odesłać (adres firmy), kto płaci koszt zwrotu (placeholder)
+- Reklamacje: jak zgłosić (email placeholder), co podać, termin odpowiedzi placeholder
+
+/privacy – sekcje (RODO art. 13):
+- Administrator danych: BlockchainDirect Michał Adamski (link /company)
+- Jakie dane zbieramy (konto, zamówienie, newsletter, cookies)
+- Cele i podstawy prawne (umowa, obowiązek prawny, uzasadniony interes, zgoda marketingowa)
+- Odbiorcy danych: Stripe, InPost, hosting (Replit) + placeholder księgowość
+- Okres przechowywania (placeholdery + “wg przepisów”)
+- Prawa osoby + skarga do UODO
+- Cookies i zgody: niezbędne vs analityczne/marketing (w zależności od zgody)
+
+2) Cookie banner (minimalny):
+- pokazuj fixed na dole dopóki user nie kliknie “Akceptuj” albo “Odrzuć”
+- zapis decyzji w localStorage: cookieConsent = "accepted" / "rejected"
+- po decyzji nie pokazuj ponownie
+- dodaj w stopce link “Ustawienia cookies” który resetuje decyzję (usuwa localStorage) i pokazuje banner ponownie
+- jeśli cookieConsent !== "accepted" to nie uruchamiaj żadnych analytics (jeśli gdzieś istnieją)
+
+3) Footer:
+- dodaj linki do: /terms /privacy /returns /company
+- dodaj link “Ustawienia cookies” (reset zgody)
+
+Nie dodawaj nowych bibliotek. Nie refaktoruj routingu – tylko dodaj strony, banner i linki w stopce.
+Na końcu pokaż listę plików zmienionych/dodanych i kluczowe fragmenty kodu.
