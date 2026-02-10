@@ -68,9 +68,31 @@ export default function ProductDetail() {
 
   const { product, images } = data;
 
+  const jsonLd: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.shortDescription || product.description,
+    sku: product.id,
+    offers: {
+      "@type": "Offer",
+      price: String(product.price),
+      priceCurrency: "PLN",
+      availability: product.inStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `https://abuela.casa/product/${product.slug}`,
+    },
+  };
+  if (product.imageUrl) {
+    jsonLd.image = [product.imageUrl];
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 md:px-6">

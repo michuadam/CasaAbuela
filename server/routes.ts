@@ -14,6 +14,28 @@ export async function registerRoutes(
   // Setup authentication
   setupAuth(app);
 
+  // Sitemap
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const products = await storage.getProducts();
+      const base = "https://abuela.casa";
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      xml += `  <url><loc>${base}/</loc></url>\n`;
+      for (const p of products) {
+        xml += `  <url><loc>${base}/product/${p.slug}</loc>`;
+        if (p.createdAt) {
+          xml += `<lastmod>${new Date(p.createdAt).toISOString().split("T")[0]}</lastmod>`;
+        }
+        xml += `</url>\n`;
+      }
+      xml += `</urlset>`;
+      res.set("Content-Type", "application/xml");
+      res.send(xml);
+    } catch {
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
   // Auth routes - Register
   app.post('/api/register', async (req: any, res) => {
     try {
